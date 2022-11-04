@@ -51,55 +51,6 @@ El flujo de utilización de la librería es:
  create mode 100644 src/selector.h
  create mode 100644 src/selector_test.c
 
-diff --git a/README b/README
-index 2579909..c59736e 100644
---- a/README
-+++ b/README
-@@ -44,6 +44,8 @@ hello.c    - parser del primer mensaje del protocolo SOCKSv5. Implementado con
- request.c  - parser del segundo mensaje del protocolo SOCKSv5. Implementado de 
-              forma más tradicional (completa una estructura).
- netutils.c - utilidades varias relacionadas a sockets
-+selector.c - selector.c - un muliplexor de entrada salida.
-+
- 
- Los parsers no realizan llamadas de sistema ni alocaciones.
- 
-diff --git a/src/Makefile.am b/src/Makefile.am
-index 3eef9cc..ace8b5f 100644
---- a/src/Makefile.am
-+++ b/src/Makefile.am
-@@ -1,15 +1,18 @@
--bin_PROGRAMS    = socksv5 hello_test request_test netutils_test
-+bin_PROGRAMS    = socksv5 hello_test request_test netutils_test \
-+                  selector_test
-+
- socksv5_SOURCES = main.c \
-                   hello.h hello.c \
- 		  request.h request.c \
-                   netutils.h netutils.c \
- 		  buffer.h buffer.c \
-+                  selector.h selector.c \
-                   socks5.h socks5.c
- 
- TESTS = hello_test request_test netutils_test \
--        buffer_test
-+        buffer_test selector_test
- check_PROGRAMS = hello_test request_test netutils_test \
--                 buffer_test
-+                 buffer_test selector_test
- 
- hello_test_SOURCES = hello_test.c hello.c hello.h buffer.c buffer.h
- hello_test_CFLAGS  = @CHECK_CFLAGS@ 
-@@ -27,6 +30,10 @@ buffer_test_SOURCES = buffer_test.c buffer.h
- buffer_test_CFLAGS  = @CHECK_CFLAGS@
- buffer_test_LDADD   = @CHECK_LIBS@
- 
-+selector_test_SOURCES = selector_test.c selector.h 
-+selector_test_CFLAGS  = @CHECK_CFLAGS@
-+selector_test_LDADD   = @CHECK_LIBS@
-+
- 
- # si se utilizó converage lo limpiamos
  # https://gcc.gnu.org/onlinedocs/gcc-7.1.0/gcc/Gcov-Data-Files.html
 diff --git a/src/selector.c b/src/selector.c
 new file mode 100644

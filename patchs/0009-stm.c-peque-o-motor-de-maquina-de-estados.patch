@@ -31,57 +31,6 @@ Provee todas las funciones necesitadas en un `struct fd_handler'
  create mode 100644 src/stm.h
  create mode 100644 src/stm_test.c
 
-diff --git a/README b/README
-index c59736e..aa17422 100644
---- a/README
-+++ b/README
-@@ -45,7 +45,8 @@ request.c  - parser del segundo mensaje del protocolo SOCKSv5. Implementado de
-              forma más tradicional (completa una estructura).
- netutils.c - utilidades varias relacionadas a sockets
- selector.c - selector.c - un muliplexor de entrada salida.
--
-+stm.c      - pequeño motor de maquina de estados donde los eventos son los
-+             del selector.c
- 
- Los parsers no realizan llamadas de sistema ni alocaciones.
- 
-diff --git a/src/Makefile.am b/src/Makefile.am
-index ace8b5f..854706e 100644
---- a/src/Makefile.am
-+++ b/src/Makefile.am
-@@ -1,5 +1,5 @@
- bin_PROGRAMS    = socksv5 hello_test request_test netutils_test \
--                  selector_test
-+                  selector_test stm_test
- 
- socksv5_SOURCES = main.c \
-                   hello.h hello.c \
-@@ -7,12 +7,13 @@ socksv5_SOURCES = main.c \
-                   netutils.h netutils.c \
- 		  buffer.h buffer.c \
-                   selector.h selector.c \
-+                  stm.h stm.c \
-                   socks5.h socks5.c
- 
- TESTS = hello_test request_test netutils_test \
--        buffer_test selector_test
-+        buffer_test selector_test stm_test
- check_PROGRAMS = hello_test request_test netutils_test \
--                 buffer_test selector_test
-+                 buffer_test selector_test stm_test
- 
- hello_test_SOURCES = hello_test.c hello.c hello.h buffer.c buffer.h
- hello_test_CFLAGS  = @CHECK_CFLAGS@ 
-@@ -34,6 +35,10 @@ selector_test_SOURCES = selector_test.c selector.h
- selector_test_CFLAGS  = @CHECK_CFLAGS@
- selector_test_LDADD   = @CHECK_LIBS@
- 
-+stm_test_SOURCES = stm_test.c stm.c stm.h  selector.h
-+stm_test_CFLAGS  = @CHECK_CFLAGS@
-+stm_test_LDADD   = @CHECK_LIBS@
-+
- 
- # si se utilizó converage lo limpiamos
  # https://gcc.gnu.org/onlinedocs/gcc-7.1.0/gcc/Gcov-Data-Files.html
 diff --git a/src/stm.c b/src/stm.c
 new file mode 100644
