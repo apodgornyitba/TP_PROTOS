@@ -2,15 +2,13 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "parser_utils.h"
+#include "../include/parser_utils.h"
 
-static void
-assert_eq(const unsigned type, const int c, const struct parser_event *e) {
+static void assert_eq(const unsigned type, const int c, const struct parser_event *e) {
     ck_assert_ptr_eq (0,    e->next);
     ck_assert_uint_eq(1,    e->n);
     ck_assert_uint_eq(type, e->type);
     ck_assert_uint_eq(c,    e->data[0]);
-
 }
 
 START_TEST (test_eq) {
@@ -28,8 +26,7 @@ START_TEST (test_eq) {
 }
 END_TEST
 
-Suite *
-suite(void) {
+Suite * suite(void) {
     Suite *s;
     TCase *tc;
 
@@ -44,10 +41,7 @@ suite(void) {
     return s;
 }
 
-
-
-int
-main(void) {
+int main(void) {
     int number_failed;
     Suite *s;
     SRunner *sr;
@@ -60,4 +54,3 @@ main(void) {
     srunner_free(sr);
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <check.h>
-#include "selector.h"
+#include "../include/selector.h"
 #include "stm.h"
 
 enum test_states {
@@ -16,20 +16,17 @@ struct data {
     unsigned i;
 };
 
-static void
-on_arrival(const unsigned state, struct selector_key *key) {
+static void on_arrival(const unsigned state, struct selector_key *key) {
     struct data *d = (struct data *)key->data;
     d->arrived[state] = true;
 }
 
-static void
-on_departure(const unsigned state,struct selector_key *key) {
+static void on_departure(const unsigned state,struct selector_key *key) {
     struct data *d = (struct data *)key->data;
     d->departed[state] = true;
 }
 
-static unsigned
-on_read_ready(struct selector_key *key) {
+static unsigned on_read_ready(struct selector_key *key) {
     struct data *d = (struct data *)key->data;
     unsigned ret;
 
@@ -41,8 +38,7 @@ on_read_ready(struct selector_key *key) {
     return ret;
 }
 
-static unsigned
-on_write_ready(struct selector_key *key) {
+static unsigned on_write_ready(struct selector_key *key) {
     return on_read_ready(key);
 }
 
@@ -120,8 +116,7 @@ START_TEST (test_buffer_misc) {
 }
 END_TEST
 
-Suite *
-suite(void) {
+Suite * suite(void) {
     Suite *s   = suite_create("nio_stm");
     TCase *tc  = tcase_create("nio_stm");
 
@@ -131,8 +126,7 @@ suite(void) {
     return s;
 }
 
-int
-main(void) {
+int main(void) {
     SRunner *sr  = srunner_create(suite());
     int number_failed;
 

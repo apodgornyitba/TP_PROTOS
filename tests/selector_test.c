@@ -4,7 +4,7 @@
 #define INITIAL_SIZE ((size_t) 1024)
 
 // para poder testear las funciones estaticas
-#include "selector.c"
+#include "../src/selector.c"
 
 START_TEST (test_selector_error) {
     const selector_status data[] = {
@@ -74,8 +74,8 @@ END_TEST
 // callbacks de prueba
 static void *data_mark = (void *)0x0FF1CE;
 static unsigned destroy_count = 0;
-static void
-destroy_callback(struct selector_key *key) {
+
+static void destroy_callback(struct selector_key *key) {
     ck_assert_ptr_nonnull(key->s);
     ck_assert_int_ge(key->fd, 0);
     ck_assert_int_lt(key->fd, ITEMS_MAX_SIZE);
@@ -124,10 +124,8 @@ START_TEST (test_selector_register_unregister_register) {
         .handle_close  = destroy_callback,
     };
     int fd = ITEMS_MAX_SIZE - 1;
-    ck_assert_uint_eq(SELECTOR_SUCCESS,
-                      selector_register(s, fd, &h, 0, data_mark));
-    ck_assert_uint_eq(SELECTOR_SUCCESS,
-                      selector_unregister_fd(s, fd));
+    ck_assert_uint_eq(SELECTOR_SUCCESS, selector_register(s, fd, &h, 0, data_mark));
+    ck_assert_uint_eq(SELECTOR_SUCCESS, selector_unregister_fd(s, fd));
 
     const struct item *item = s->fds + fd;
     ck_assert_int_eq (0,          s->max_fd);
@@ -136,8 +134,7 @@ START_TEST (test_selector_register_unregister_register) {
     ck_assert_uint_eq(0,          item->interest);
     ck_assert_ptr_eq (0x00,       item->data);
 
-    ck_assert_uint_eq(SELECTOR_SUCCESS,
-                      selector_register(s, fd, &h, 0, data_mark));
+    ck_assert_uint_eq(SELECTOR_SUCCESS, selector_register(s, fd, &h, 0, data_mark));
     item = s->fds + fd;
     ck_assert_int_eq (fd,         s->max_fd);
     ck_assert_int_eq (fd,         item->fd);
@@ -151,8 +148,7 @@ START_TEST (test_selector_register_unregister_register) {
 }
 END_TEST
 
-Suite * 
-suite(void) {
+Suite * suite(void) {
     Suite *s  = suite_create("nio");
     TCase *tc = tcase_create("nio");
 
@@ -166,8 +162,7 @@ suite(void) {
     return s;
 }
 
-int 
-main(void) {
+int main(void) {
     int number_failed;
     SRunner *sr = srunner_create(suite());
 
@@ -176,4 +171,3 @@ main(void) {
     srunner_free(sr);
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

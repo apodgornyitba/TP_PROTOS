@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "netutils.h"
+#include "../include/netutils.h"
 
 START_TEST (test_sockaddr_to_human_ipv4) {
     char buff[50] = {0};
@@ -14,8 +14,7 @@ START_TEST (test_sockaddr_to_human_ipv4) {
     addr.sin_addr.s_addr = htonl(0x01020304);
     const struct sockaddr *x = (const struct sockaddr *) &addr;
 
-    ck_assert_str_eq(sockaddr_to_human(buff, sizeof(buff)/sizeof(buff[0]), x),
-                     "1.2.3.4:9090");
+    ck_assert_str_eq(sockaddr_to_human(buff, sizeof(buff)/sizeof(buff[0]), x), "1.2.3.4:9090");
     ck_assert_str_eq(sockaddr_to_human(buff, 5,  x), "unkn");
     ck_assert_str_eq(sockaddr_to_human(buff, 8,  x), "1.2.3.4");
     ck_assert_str_eq(sockaddr_to_human(buff, 9,  x), "1.2.3.4:");
@@ -25,7 +24,6 @@ START_TEST (test_sockaddr_to_human_ipv4) {
     ck_assert_str_eq(sockaddr_to_human(buff, 13, x), "1.2.3.4:9090");
 }
 END_TEST
-
 
 START_TEST (test_sockaddr_to_human_ipv6) {
     char buff[50] = {0};
@@ -42,23 +40,16 @@ START_TEST (test_sockaddr_to_human_ipv6) {
     const struct sockaddr *x = (const struct sockaddr *) &addr;
     ck_assert_str_eq(sockaddr_to_human(buff, 10, x), "unknown i");
     ck_assert_str_eq(sockaddr_to_human(buff, 39, x), "unknown ip:9090");
-    ck_assert_str_eq(sockaddr_to_human(buff, 40, x),
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
-    ck_assert_str_eq(sockaddr_to_human(buff, 41, x),
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:");
-    ck_assert_str_eq(sockaddr_to_human(buff, 42, x),
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:9");
-    ck_assert_str_eq(sockaddr_to_human(buff, 43, x),
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:90");
-    ck_assert_str_eq(sockaddr_to_human(buff, 44, x),
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:909");
-    ck_assert_str_eq(sockaddr_to_human(buff, 45, x),
-        "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:9090");
+    ck_assert_str_eq(sockaddr_to_human(buff, 40, x), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff");
+    ck_assert_str_eq(sockaddr_to_human(buff, 41, x), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:");
+    ck_assert_str_eq(sockaddr_to_human(buff, 42, x), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:9");
+    ck_assert_str_eq(sockaddr_to_human(buff, 43, x), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:90");
+    ck_assert_str_eq(sockaddr_to_human(buff, 44, x), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:909");
+    ck_assert_str_eq(sockaddr_to_human(buff, 45, x), "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:9090");
 }
 END_TEST
 
-Suite * 
-hello_suite(void) {
+Suite * hello_suite(void) {
     Suite *s;
     TCase *tc;
 
@@ -74,8 +65,7 @@ hello_suite(void) {
     return s;
 }
 
-int 
-main(void) {
+int main(void) {
     int number_failed;
     Suite *s;
     SRunner *sr;
@@ -88,4 +78,3 @@ main(void) {
     srunner_free(sr);
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-

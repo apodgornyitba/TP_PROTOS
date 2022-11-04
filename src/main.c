@@ -24,7 +24,7 @@
 #include <netinet/tcp.h>
 
 #include "socks5.h"
-#include "selector.h"
+#include "../inlcude/selector.h"
 #include "socks5nio.h"
 
 static bool done = false;
@@ -35,8 +35,7 @@ sigterm_handler(const int signal) {
     done = true;
 }
 
-int
-main(const int argc, const char **argv) {
+int main(const int argc, const char **argv) {
     unsigned port = 1080;
 
     if(argc == 1) {
@@ -45,9 +44,7 @@ main(const int argc, const char **argv) {
         char *end     = 0;
         const long sl = strtol(argv[1], &end, 10);
 
-        if (end == argv[1]|| '\0' != *end 
-           || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno)
-           || sl < 0 || sl > USHRT_MAX) {
+        if (end == argv[1]|| '\0' != *end || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno) || sl < 0 || sl > USHRT_MAX) {
             fprintf(stderr, "port should be an integer: %s\n", argv[1]);
             return 1;
         }
@@ -107,6 +104,7 @@ main(const int argc, const char **argv) {
             .tv_nsec = 0,
         },
     };
+
     if(0 != selector_init(&conf)) {
         err_msg = "initializing selector";
         goto finally;
@@ -122,8 +120,8 @@ main(const int argc, const char **argv) {
         .handle_write      = NULL,
         .handle_close      = NULL, // nada que liberar
     };
-    ss = selector_register(selector, server, &socksv5,
-                                              OP_READ, NULL);
+
+    ss = selector_register(selector, server, &socksv5, OP_READ, NULL);
     if(ss != SELECTOR_SUCCESS) {
         err_msg = "registering fd";
         goto finally;
@@ -143,10 +141,7 @@ main(const int argc, const char **argv) {
     int ret = 0;
 finally:
     if(ss != SELECTOR_SUCCESS) {
-        fprintf(stderr, "%s: %s\n", (err_msg == NULL) ? "": err_msg,
-                                  ss == SELECTOR_IO
-                                      ? strerror(errno)
-                                      : selector_error(ss));
+        fprintf(stderr, "%s: %s\n", (err_msg == NULL) ? "": err_msg, ss == SELECTOR_IO ? strerror(errno) : selector_error(ss));
         ret = 2;
     } else if(err_msg) {
         perror(err_msg);

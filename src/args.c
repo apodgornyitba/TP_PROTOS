@@ -5,25 +5,31 @@
 #include <errno.h>
 #include <getopt.h>
 
-#include "args.h"
+#include "../include/args.h"
 
-static unsigned short
-port(const char *s) {
-     char *end     = 0;
-     const long sl = strtol(s, &end, 10);
-
-     if (end == s|| '\0' != *end
-        || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno)
-        || sl < 0 || sl > USHRT_MAX) {
-         fprintf(stderr, "port should in in the range of 1-65536: %s\n", s);
-         exit(1);
-         return 1;
-     }
-     return (unsigned short)sl;
+static unsigned short port(const char *s) {
+    char *end = 0;
+    const long sl = strtol(s, &end, 10);
+    if (end == s|| '\0' != *end || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno) || sl < 0 || sl > USHRT_MAX) {
+        fprintf(stderr, "port should in in the range of 1-65536: %s\n", s);
+        exit(1);
+        return 1;
+    }
+    return (unsigned short)sl;
 }
 
-static void
-user(char *s, struct users *user) {
+static long buffer_size(const char *s) {
+    char *end     = 0;
+    const long sl = strtol(s, &end, 10);
+
+    if (end == s|| '\0' != *end || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno)) {
+        fprintf(stderr, "Error setting buffer size\n");
+        return -1;
+    }
+    return sl;
+}
+
+static void user(char *s, struct users *user) {
     char *p = strchr(s, ':');
     if(p == NULL) {
         fprintf(stderr, "password not found\n");
@@ -34,18 +40,13 @@ user(char *s, struct users *user) {
         user->name = s;
         user->pass = p;
     }
-
 }
 
-static void
-version(void) {
-    fprintf(stderr, "socks5v version 0.0\n"
-                    "ITBA Protocolos de Comunicación 2020/1 -- Grupo X\n"
-                    "AQUI VA LA LICENCIA\n");
+static void version(void) {
+    fprintf(stderr, "socks5v version 0.0\n" "ITBA Protocolos de Comunicación 2022/2 -- Grupo 5\n");
 }
 
-static void
-usage(const char *progname) {
+static void usage(const char *progname) {
     fprintf(stderr,
         "Usage: %s [OPTION]...\n"
         "\n"
@@ -62,24 +63,19 @@ usage(const char *progname) {
         "   --doh-host  <host>  XXX\n"
         "   --doh-path  <host>  XXX\n"
         "   --doh-query <host>  XXX\n"
-
         "\n",
         progname);
     exit(1);
 }
 
-void 
-parse_args(const int argc, char **argv, struct socks5args *args) {
+//TODO: AGREGAR ARGS PARA IPv6
+void parse_args(const int argc, char **argv, struct socks5args *args) {
     memset(args, 0, sizeof(*args)); // sobre todo para setear en null los punteros de users
-
     args->socks_addr = "0.0.0.0";
     args->socks_port = 1080;
-
     args->mng_addr   = "127.0.0.1";
     args->mng_port   = 8080;
-
     args->disectors_enabled = true;
-
     args->doh.host = "localhost";
     args->doh.ip   = "127.0.0.1";
     args->doh.port = 8053;
@@ -155,8 +151,8 @@ parse_args(const int argc, char **argv, struct socks5args *args) {
                 fprintf(stderr, "unknown argument %d.\n", c);
                 exit(1);
         }
-
     }
+
     if (optind < argc) {
         fprintf(stderr, "argument not accepted: ");
         while (optind < argc) {

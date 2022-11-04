@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "parser.h"
+#include "../include/parser.h"
 
 // definición de maquina
 
@@ -16,15 +16,13 @@ enum event_type {
     BAR,
 };
 
-static void
-foo(struct parser_event *ret, const uint8_t c) {
+static void foo(struct parser_event *ret, const uint8_t c) {
     ret->type    = FOO;
     ret->n       = 1;
     ret->data[0] = c;
 }
 
-static void
-bar(struct parser_event *ret, const uint8_t c) {
+static void bar(struct parser_event *ret, const uint8_t c) {
     ret->type    = BAR;
     ret->n       = 1;
     ret->data[0] = c;
@@ -35,6 +33,7 @@ static const struct parser_state_transition ST_S0 [] =  {
     {.when = 'f',        .dest = S0,        .act1 = foo,},
     {.when = ANY,        .dest = S1,        .act1 = bar,},
 };
+
 static const struct parser_state_transition ST_S1 [] =  {
     {.when = 'F',        .dest = S0,        .act1 = foo,},
     {.when = 'f',        .dest = S0,        .act1 = foo,},
@@ -62,8 +61,7 @@ static struct parser_definition definition = {
 
 //// TEST
 
-static void
-assert_eq(const unsigned type, const int c, const struct parser_event *e) {
+static void assert_eq(const unsigned type, const int c, const struct parser_event *e) {
     ck_assert_ptr_eq (0,    e->next);
     ck_assert_uint_eq(1,    e->n);
     ck_assert_uint_eq(type, e->type);
@@ -82,8 +80,7 @@ START_TEST (test_basic) {
 }
 END_TEST
 
-Suite *
-suite(void) {
+Suite * suite(void) {
     Suite *s;
     TCase *tc;
 
@@ -98,8 +95,7 @@ suite(void) {
     return s;
 }
 
-int
-main(void) {
+int main(void) {
     int number_failed;
     Suite *s;
     SRunner *sr;
@@ -112,4 +108,3 @@ main(void) {
     srunner_free(sr);
     return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
-
