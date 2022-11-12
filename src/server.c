@@ -56,7 +56,7 @@ int main(){
     printf("Listener port %d \n", PORT);
 
     //try to specify maximum of 500 pending connections for the master socket
-    if (listen(master_socket, MAX) < 0) {
+    if (listen(master_socket, MAX_CLIENTS) < 0) {
         perror("Listen failed");
         exit(EXIT_FAILURE);
     }
@@ -102,7 +102,7 @@ int main(){
             }
 
             //inform user of socket number - used in send and receive commands
-            printf("------------------------------------\n")
+            printf("------------------------------------\n");
             printf("New Connection Established\n");
             printf("Socket fd: %d\n", new_socket);
             printf("IP address: %s\n", inet_ntoa(address.sin_addr));
