@@ -12,13 +12,13 @@
 #define FALSE  0
 #define PORT 8888
 #define MAX_CLIENTS 500
-#define BUFF_SIZE
+#define BUFF_SIZE 1025
 
 int main(){
 
 
     int opt = TRUE;
-    int master_socket , addrlen , new_socket , client_socket[MAX], activity, i , valread , sd;
+    int master_socket , addrlen , new_socket , client_socket[MAX_CLIENTS], activity, i , valread , sd;
     int max_sd;
     struct sockaddr_in address;
 
@@ -105,9 +105,9 @@ int main(){
             printf("------------------------------------\n")
             printf("New Connection Established\n");
             printf("Socket fd: %d\n", new_socket);
-            printf("IP address: %d\n", inet_ntoa(address.sin_addr));
-            print("Port number: %d\n", ntohs(address.sin_port));
-            printf("------------------------------------\n")
+            printf("IP address: %s\n", inet_ntoa(address.sin_addr));
+            printf("Port number: %d\n", ntohs(address.sin_port));
+            printf("------------------------------------\n");
 
             //add new socket to array of sockets
             for (i = 0; i < MAX_CLIENTS; i++) {
