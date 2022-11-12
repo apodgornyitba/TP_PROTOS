@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #ifndef __logger_h_
 #define __logger_h_
 #include <stdio.h>

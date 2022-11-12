@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #ifndef STM_H_wL7YxN65ZHqKGvCPrNbPtMJgL8B
 #define STM_H_wL7YxN65ZHqKGvCPrNbPtMJgL8B
 

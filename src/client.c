@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -10,6 +10,8 @@
  * DNS utilizando getaddrinfo), pero toda esa complejidad está oculta en
  * el selector.
  */
+/* Codigo provisto por la cátedra */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

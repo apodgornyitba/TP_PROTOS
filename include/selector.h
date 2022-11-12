@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #ifndef SELECTOR_H_W50GNLODsARolpHbsDsrvYvMsbT
 #define SELECTOR_H_W50GNLODsARolpHbsDsrvYvMsbT
 

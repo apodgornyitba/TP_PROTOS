@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #include <stdio.h>     /* for printf */
 #include <stdlib.h>    /* for exit */
 #include <limits.h>    /* LONG_MIN et al */

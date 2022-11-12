@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #include <netdb.h>
 #include <stdio.h>
 #include <string.h>

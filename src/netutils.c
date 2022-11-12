@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #include <stdbool.h>
 #include <errno.h>
 #include <string.h>

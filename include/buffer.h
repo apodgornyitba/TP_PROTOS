@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #ifndef BUFFER_H_VelRDAxzvnuFmwEaR0ftrkIinkT
 #define BUFFER_H_VelRDAxzvnuFmwEaR0ftrkIinkT
 

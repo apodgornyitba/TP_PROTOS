@@ -1,6 +1,8 @@
 /**
  * selector.c - un muliplexor de entrada salida
  */
+/* Codigo provisto por la cátedra */
+
 #include <stdio.h>  // perror
 #include <stdlib.h> // malloc
 #include <string.h> // memset

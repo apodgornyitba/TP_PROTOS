@@ -1,6 +1,8 @@
 /**
  * socks5nio.c  - controla el flujo de un proxy SOCKSv5 (sockets no bloqueantes)
  */
+/* Codigo provisto por la cátedra */
+
 #include<stdio.h>
 #include <stdlib.h>  // malloc
 #include <string.h>  // memset

@@ -1,3 +1,5 @@
+/* Codigo provisto por la cátedra */
+
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
