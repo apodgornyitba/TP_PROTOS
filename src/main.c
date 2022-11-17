@@ -4,14 +4,12 @@
  * Interpreta los argumentos de línea de comandos, y monta un socket
  * pasivo.
  *
- * Todas las conexiones entrantes se manejarán en éste hilo.
+ * Todas las conexiones entrantes se manejarán en este hilo.
  *
- * Se descargará en otro hilos las operaciones bloqueantes (resolución de
- * DNS utilizando getaddrinfo), pero toda esa complejidad está oculta en
+ * Se descargarÃ¡ en otro hilos las operaciones bloqueantes (resoluciÃ³n de
+ * DNS utilizando getaddrinfo), pero toda esa complejidad estÃ¡ oculta en
  * el selector.
  */
-/* Codigo provisto por la cátedra */
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -25,9 +23,9 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 
-#include "socks5.h"
-#include "../inlcude/selector.h"
-#include "socks5nio.h"
+#include "socks5.h" //FIX: HACER EL .H??
+#include "../include/selector.h"
+#include "../include/socks5nio.h"
 
 static bool done = false;
 
@@ -37,7 +35,8 @@ sigterm_handler(const int signal) {
     done = true;
 }
 
-int main(const int argc, const char **argv) {
+int
+main(const int argc, const char **argv) {
     unsigned port = 1080;
 
     if(argc == 1) {
@@ -46,7 +45,9 @@ int main(const int argc, const char **argv) {
         char *end     = 0;
         const long sl = strtol(argv[1], &end, 10);
 
-        if (end == argv[1]|| '\0' != *end || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno) || sl < 0 || sl > USHRT_MAX) {
+        if (end == argv[1]|| '\0' != *end
+            || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno)
+            || sl < 0 || sl > USHRT_MAX) {
             fprintf(stderr, "port should be an integer: %s\n", argv[1]);
             return 1;
         }
@@ -90,7 +91,7 @@ int main(const int argc, const char **argv) {
         goto finally;
     }
 
-    // registrar sigterm es útil para terminar el programa normalmente.
+    // registrar sigterm es Util para terminar el programa normalmente.
     // esto ayuda mucho en herramientas como valgrind.
     signal(SIGTERM, sigterm_handler);
     signal(SIGINT,  sigterm_handler);
@@ -100,13 +101,12 @@ int main(const int argc, const char **argv) {
         goto finally;
     }
     const struct selector_init conf = {
-        .signal = SIGALRM,
-        .select_timeout = {
-            .tv_sec  = 10,
-            .tv_nsec = 0,
-        },
+            .signal = SIGALRM,
+            .select_timeout = {
+                    .tv_sec  = 10,
+                    .tv_nsec = 0,
+            },
     };
-
     if(0 != selector_init(&conf)) {
         err_msg = "initializing selector";
         goto finally;
@@ -118,12 +118,12 @@ int main(const int argc, const char **argv) {
         goto finally;
     }
     const struct fd_handler socksv5 = {
-        .handle_read       = socksv5_passive_accept,
-        .handle_write      = NULL,
-        .handle_close      = NULL, // nada que liberar
+            .handle_read       = socksv5_passive_accept,
+            .handle_write      = NULL,
+            .handle_close      = NULL, // nada que liberar
     };
-
-    ss = selector_register(selector, server, &socksv5, OP_READ, NULL);
+    ss = selector_register(selector, server, &socksv5,
+                           OP_READ, NULL);
     if(ss != SELECTOR_SUCCESS) {
         err_msg = "registering fd";
         goto finally;
@@ -141,9 +141,12 @@ int main(const int argc, const char **argv) {
     }
 
     int ret = 0;
-finally:
+    finally:
     if(ss != SELECTOR_SUCCESS) {
-        fprintf(stderr, "%s: %s\n", (err_msg == NULL) ? "": err_msg, ss == SELECTOR_IO ? strerror(errno) : selector_error(ss));
+        fprintf(stderr, "%s: %s\n", (err_msg == NULL) ? "": err_msg,
+                ss == SELECTOR_IO
+                ? strerror(errno)
+                : selector_error(ss));
         ret = 2;
     } else if(err_msg) {
         perror(err_msg);

@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include "../include/buffer.h"
+#include "../include/socks5nio.h"
 
 inline void buffer_reset(buffer *b) {
     b->read  = b->data;
