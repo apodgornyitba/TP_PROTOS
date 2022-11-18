@@ -1,5 +1,5 @@
-#ifndef HELLO_H
-#define HELLO_H
+#ifndef PROYECTO_PROTOS_HELLO_H
+#define PROYECTO_PROTOS_HELLO_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -9,7 +9,6 @@
 #include "states.h"
 #include "socks5nio.h"
 #include "stm.h"
-
 /**
 //    The client connects to the server, and sends a version
 //    identifier/method selection message:
@@ -52,7 +51,9 @@ static const uint8_t METHOD_NO_AUTHENTICATION_REQUIRED = 0x00;
 static const uint8_t METHOD_NO_ACCEPTABLE_METHODS = 0xFF;
 static const uint8_t METHOD_USERNAME_PASSWORD = 0x02;
 
-/* Hello state sub-states */
+/**
+ * Hello state sub-states
+ */
 enum hello_state
 {
     hello_version,
@@ -61,7 +62,9 @@ enum hello_state
     hello_done,
     hello_error_unsupported_version,
 };
-/* Hello parser struct */
+/**
+ * Hello parser struct
+ */
 typedef struct hello_parser{
     /** invocado cada vez que se presenta un nuevo método **/
     void (*on_authentication_method)(void *data, const uint8_t method);
@@ -73,7 +76,7 @@ typedef struct hello_parser{
     enum hello_state state;
     /* cantidad de metodos que faltan por leer */
     uint8_t remaining;
-};
+}hello_parser;
 
 /**
  * Inicializa el parser
@@ -150,11 +153,18 @@ unsigned hello_read(struct selector_key *key);
 static unsigned hello_process(const struct hello_st* d);
 
 /**
- * Close resources
+ * Close hello read resources
  * @param state
  * @param key
  */
 void hello_read_close(unsigned state, struct selector_key *key);
+
+/**
+ * Inicializa las variables de los estados hello_st
+ * @param state
+ * @param key
+ */
+void hello_write_init(const unsigned state, struct selector_key *key) ;
 
 /**
  * Writes bytes on buffer to client
@@ -162,5 +172,12 @@ void hello_read_close(unsigned state, struct selector_key *key);
  * @return
  */
 unsigned hello_write(struct selector_key *key);
+
+/**
+ * Close hello write resources
+ * @param state
+ * @param key
+ */
+void hello_write_close(const unsigned state, struct selector_key *key);
 
 #endif
