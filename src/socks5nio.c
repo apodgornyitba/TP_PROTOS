@@ -128,8 +128,9 @@ static struct socks5* socks5_new(int client_fd){
     ret->client_fd= client_fd;
     ret->client_addr_len= sizeof(ret->client_addr);
 
-    debug(etiqueta, REQUEST_CONNECTING, "Setting first state", client_fd);
-    ret->stm.initial =REQUEST_CONNECTING;
+    //// INITIAL STATE
+    debug(etiqueta, HELLO_READ, "Setting first state", client_fd);
+    ret->stm.initial =HELLO_READ;
     ret->stm.max_state= ERROR;
     ret->stm.current= &client_statbl[4];
     ret->stm.states= client_statbl;

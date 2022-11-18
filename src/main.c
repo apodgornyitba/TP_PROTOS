@@ -34,7 +34,6 @@
 #define SELECTOR_INITIAL_ELEMENTS 1024
 static bool done = false;
 
-static bool done = false;
 
 static void sigterm_handler(const int signal) {
     printf("signal %d, cleaning up and exiting\n",signal);
@@ -87,7 +86,7 @@ main(const int argc, const char **argv) {
             goto finally;
         }
 
-        socket6 = create_socket(AF_INET6, NULL, &args->socks_addr_info6);
+        socket6 = create_socket(AF_INET6, NULL, &args->socks_addr_info_6);
         if(socket6 == -1){
             err_msg = "Error creating IPv6 socket";
             goto finally;
@@ -114,7 +113,7 @@ main(const int argc, const char **argv) {
         debug(etiqueta, AF_UNSPEC, "IPv6 Proxy SOCKS address -> Creating socket", 0);
 
         //// Creo sockets para IPv6
-        socket6 = create_socket(AF_INET6, NULL, &args->socks_addr_info6);
+        socket6 = create_socket(AF_INET6, NULL, &args->socks_addr_info_6);
         if(socket6 == -1){
             err_msg = "Error creating IPv6 socket";
             goto finally;

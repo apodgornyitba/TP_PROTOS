@@ -79,3 +79,4 @@ int create_socket(int type, struct sockaddr_in * addr, struct sockaddr_in6 * add
     else
         debug(label, 0, "Se creo el socket de IPv6", server);
     return server;
+}

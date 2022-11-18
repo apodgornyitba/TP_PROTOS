@@ -1,5 +1,6 @@
-#ifndef EQUEST_H
+#ifndef REQUEST_H
 #define REQUEST_H
+
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -50,8 +51,8 @@ union socks_addr
 
 struct request
 {
-    //enum socks_req_cmd cmd;
-    //enum socks_addr_type dest_addr_type;
+//    enum socks_req_cmd cmd;
+//    enum socks_addr_type dest_addr_type;
     union socks_addr dest_addr;
     in_port_t dest_port;
 };
@@ -80,23 +81,29 @@ enum socks_reply_status
     status_address_type_not_supported = 0x08,
 };
 
-/* inicializa el parser */
-void request_parser_init(request_parser * p);
 
-/* entrega un byte al parser. Retorna true si se llego al final */
-enum request_state request_parser_feed(request_parser * p, uint8_t b);
+/** inicializa el parser **/
+void request_parser_init(request_parser *p);
 
-/* consume los bytes del mensaje del cliente y se los entrega al parser
- * hasta que se termine de parsear */
-enum request_state request_consume(buffer * b, request_parser * p, bool * error);
+/** entrega un byte al parser. Retorna true si se llego al final **/
+enum request_state request_parser_feed(request_parser *p, uint8_t b);
 
-bool request_is_done(const enum request_state state, bool * error);
+/** consume los bytes del mensaje del cliente y se los entrega al parser
+ * hasta que se termine de parsear
+**/
+enum request_state request_consume(buffer *b, request_parser *p, bool *error);
 
-/* ensambla la respuesta del request dentro del buffer con el metodo seleccionado. */
-int request_marshal(buffer * b, const enum socks_reply_status status, const enum socks_atyp atyp, const union socks_addr addr, const in_port_t dest_port);
+bool request_is_done(const enum request_state state, bool *error);
+
+/** ensambla la respuesta del request dentro del buffer con el metodo
+ * seleccionado.
+**/
+int request_marshal(buffer *b, const enum socks_reply_status status, const enum socks_atyp atyp, const union socks_addr addr, const in_port_t dest_port);
 
 enum socks_reply_status errno_to_socks(int e);
 
-enum socks_reply_status cmd_resolve(struct request * request, struct sockaddr ** originaddr, socklen_t * originlen, int * domain);
+#include <netdb.h>
+#include <arpa/inet.h>
 
+enum socks_reply_status cmd_resolve(struct request *request, struct sockaddr **originaddr, socklen_t *originlen, int *domain);
 #endif

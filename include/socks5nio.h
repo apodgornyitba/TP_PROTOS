@@ -3,7 +3,8 @@
 
 #include <netdb.h>
 #include "selector.h"
-#include "states.h"
+// #include "states.h"
+#include "hello.h"
 #include "stm.h"
 #include "copy.h"
 
@@ -95,12 +96,12 @@ typedef struct socks5 {
     union {
         struct hello_st           hello;
         struct request_st         request;
-        struct copy               copy;
+        struct copy_st            copy;
     } client;
     /** estados para el origin_fd */
     union {
         struct connecting         conn;
-        struct copy               copy;
+        struct copy_st            copy;
     } orig;
 
     uint8_t raw_buff_a[2048], raw_buff_b[2048];
