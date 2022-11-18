@@ -113,7 +113,7 @@ typedef struct socks5 {
     /** siguiente en el pool */
     struct socks5 *next;
 
-};
+}socks5;
 
 /** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
 #define ATTACHMENT(key) ( (struct socks5 *)(key)->data)

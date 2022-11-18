@@ -15,7 +15,7 @@ typedef struct hello_st
     struct hello_parser *parser;
     /** Selected auth method */
     uint8_t method;
-};
+}hello_st;
 
 /** Used by the USERPASS_READ and USERPASS_WRITE states */
 //typedef struct userpass_st
@@ -51,7 +51,7 @@ typedef struct request_st
 
     const int *client_fd;
     int *origin_fd;
-};
+}request_st;
 
 /** Used by REQUEST_CONNECTING */
 typedef struct connecting{
@@ -74,6 +74,6 @@ typedef struct copy_st
     fd_interest interest;
     /** Pointer to the structure of the opposing copy state*/
     struct copy_st * other_copy;
-};
+}copy_st;
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef PROYECTO_PROTOS_HELLO_H
-#define PROYECTO_PROTOS_HELLO_H
+#ifndef HELLO_H
+#define HELLO_H
 
 #include <stdint.h>
 #include <stdbool.h>

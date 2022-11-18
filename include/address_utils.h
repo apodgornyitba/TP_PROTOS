@@ -4,8 +4,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
 /**
- * Converts a presentation format address to network format with inet_pton.
+ * Converts an IPv4 or IPV6 address from text to binary (network) format with inet_pton.
  * @param address
  * @param addr
  * @param addr6

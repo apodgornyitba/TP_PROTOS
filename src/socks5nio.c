@@ -103,7 +103,7 @@ static const unsigned max_pool=50;
 static unsigned  pool_size=0;
 static struct socks5 *pool=0;
 
-static const struct  state_definition* socks5_describe_states();
+// static const struct  state_definition* socks5_describe_states();
 
 /** crea un nuevo struct socks */
 static struct socks5* socks5_new(int client_fd){
@@ -230,8 +230,8 @@ void socksv5_passive_accept(struct selector_key *key) {
 // REQUEST
 ////////////////////////////////////////////////////////////////////////////
 
-static void request_init(const unsigned state, struct selector_key *key)
-{
+// static void request_init(const unsigned state, struct selector_key *key)
+// {
 //    struct request_st *d = &ATTACHMENT(key)->client.request;
 //    // Adding the read buffer
 //    d->rb = &(ATTACHMENT(key)->read_buffer);
@@ -245,85 +245,85 @@ static void request_init(const unsigned state, struct selector_key *key)
 //    d->origin_addr=&ATTACHMENT(key)->origin_addr;
 //    d->origin_addr_len= &ATTACHMENT(key)->origin_addr_len;
 //    d->origin_domain=&ATTACHMENT(key)->origin_domain;
-}
+// }
 
 static unsigned request_process(struct selector_key *key, struct request_st *d);
 
 // lee todos los bytes del mensaje de tipo 'request' e inicia su proceso
-static unsigned request_read(struct selector_key *key)
-{
-    struct request_st *d = &ATTACHMENT(key)->client.request;
+// static unsigned request_read(struct selector_key *key)
+// {
+//     struct request_st *d = &ATTACHMENT(key)->client.request;
 
-    buffer *b = d->rb;
-    unsigned ret = REQUEST_READ;
-    bool error = false;
-    uint8_t *ptr;
-    size_t count;
-    ssize_t n;
+//     buffer *b = d->rb;
+//     unsigned ret = REQUEST_READ;
+//     bool error = false;
+//     uint8_t *ptr;
+//     size_t count;
+//     ssize_t n;
 
-    ptr = buffer_write_ptr(b, &count);
-    n = recv(key->fd, ptr, count, 0);
-    if (n > 0)
-    {
-        buffer_write_adv(b, n);
-        int st = request_consume(b, &d->parser, &error);
-        if (request_is_done(st, 0))
-        {
-            ret = request_process(key, d);
-        }
-    }
-    else
-    {
-        ret = ERROR;
-    }
+//     ptr = buffer_write_ptr(b, &count);
+//     n = recv(key->fd, ptr, count, 0);
+//     if (n > 0)
+//     {
+//         buffer_write_adv(b, n);
+//         int st = request_consume(b, &d->parser, &error);
+//         if (request_is_done(st, 0))
+//         {
+//             ret = request_process(key, d);
+//         }
+//     }
+//     else
+//     {
+//         ret = ERROR;
+//     }
 
-    return error ? ERROR : ret;
-}
+//     return error ? ERROR : ret;
+// }
 
-static unsigned request_write(struct selector_key *key)
-{
-    struct request_st *d = &ATTACHMENT(key)->client.request;
+// static unsigned request_write(struct selector_key *key)
+// {
+//     struct request_st *d = &ATTACHMENT(key)->client.request;
 
-    buffer *b = d->wb;
-    unsigned ret = ERROR;
-    uint8_t *ptr;
-    size_t count;
-    ssize_t n;
-    ptr = buffer_read_ptr(b, &count);
-//    n = send(key->fd, ptr, count, MSG_NOSIGNAL);
-    if (n == -1)
-    {
-        ret = ERROR;
-    }
-    else
-    {
-        buffer_read_adv(b, n);
-        if (!buffer_can_read(b))
-        {
-            if (d->status ==status_succeeded)
-            {
-                ret = COPY;
-                selector_set_interest(key->s, *d->client_fd, OP_READ);
-                selector_set_interest(key->s, *d->origin_fd, OP_READ);
-            }
-            else
-            {
-                ret = DONE;
-                selector_set_interest(key->s, *d->client_fd, OP_NOOP);
-                if(-1== *d->origin_fd){
-                    selector_set_interest(key->s, *d->origin_fd, OP_NOOP);
-                }
-            }
-        }
-    }
-    return ret;
-}
+//     buffer *b = d->wb;
+//     unsigned ret = ERROR;
+//     // uint8_t *ptr;
+//     size_t count;
+//     ssize_t n;
+//     // ptr = buffer_read_ptr(b, &count);
+// //    n = send(key->fd, ptr, count, MSG_NOSIGNAL);
+//     if (n == -1)
+//     {
+//         ret = ERROR;
+//     }
+//     else
+//     {
+//         buffer_read_adv(b, n);
+//         if (!buffer_can_read(b))
+//         {
+//             if (d->status == status_succeeded)
+//             {
+//                 ret = COPY;
+//                 selector_set_interest(key->s, *d->client_fd, OP_READ);
+//                 selector_set_interest(key->s, *d->origin_fd, OP_READ);
+//             }
+//             else
+//             {
+//                 ret = DONE;
+//                 selector_set_interest(key->s, *d->client_fd, OP_NOOP);
+//                 if(-1== *d->origin_fd){
+//                     selector_set_interest(key->s, *d->origin_fd, OP_NOOP);
+//                 }
+//             }
+//         }
+//     }
+//     return ret;
+// }
 
 
-static unsigned request_connect(struct selector_key *key, struct request_st *d);
+// static unsigned request_connect(struct selector_key *key, struct request_st *d);
 
-static unsigned request_process(struct selector_key *key, struct request_st *d)
-{
+// static unsigned request_process(struct selector_key *key, struct request_st *d)
+// {
 //    unsigned ret;
 //    pthread_t tid;
 //
@@ -415,13 +415,13 @@ static unsigned request_process(struct selector_key *key, struct request_st *d)
 //    };
 //
     //TODO: no se llega a ver todo en la clase
-}
+// }
 
 // procesa el resultado de la resolución de nombres
-static unsigned request_resolv_done(struct selector_key *key)
-{
-    struct request_st *d = &ATTACHMENT(key)->client.request;
-    struct socks5 *s = ATTACHMENT(key);
+// static unsigned request_resolv_done(struct selector_key *key)
+// {
+//     struct request_st *d = &ATTACHMENT(key)->client.request;
+    // struct socks5 *s = ATTACHMENT(key);
 
 //    if (d->addr_resolv.cant_addr == 0)
 //    {
@@ -462,9 +462,9 @@ static unsigned request_resolv_done(struct selector_key *key)
 //        d->addr_resolv.cant_addr--;
 //    }
 
-    return request_connect(key, d);
+    // return request_connect(key, d);
 
-    fail:
+    // fail:
 //    if (-1 != request_marshal(s->client.request.wb, d->status, d->request.dest_addr_type, d->request.dest_addr, d->request.dest_port))
 //    {
 //        return REQUEST_WRITE;
@@ -472,10 +472,10 @@ static unsigned request_resolv_done(struct selector_key *key)
 //    else {
 //        abort();
 //    }
-    return 0;
-}
+    // return 0;
+// }
 
-static unsigned request_connect(struct selector_key *key, struct request_st *d){
+// static unsigned request_connect(struct selector_key *key, struct request_st *d){
 //    bool error= false;
 //
 //    enum socks5_response_status=d->status;
@@ -519,37 +519,37 @@ static unsigned request_connect(struct selector_key *key, struct request_st *d){
 //
 //    finally:
 //    return error ? ERROR : ret;
-return 0;
-}
+// return 0;
+// }
 
-static unsigned request_connecting(struct selector_key *key){
-    int error;
-    socklen_t len= sizeof(error);
-    struct connecting *d= &ATTACHMENT(key)->orig.conn;
+// static unsigned request_connecting(struct selector_key *key){
+//     int error;
+//     socklen_t len= sizeof(error);
+//     struct connecting *d= &ATTACHMENT(key)->orig.conn;
 
-    if(getsockopt(key->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0){
-//        *d->status= status_general_SOCKS_server_failure;
-    }else{
-        if(error== 0){
-            *d->status=status_succeeded;
-            *d->origin_fd=key->fd;
-        }else{
-            *d->status=errno_to_socks(error);
-        }
-    }
+//     if(getsockopt(key->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0){
+// //        *d->status= status_general_SOCKS_server_failure;
+//     }else{
+//         if(error== 0){
+//             *d->status=status_succeeded;
+//             *d->origin_fd=key->fd;
+//         }else{
+//             *d->status=errno_to_socks(error);
+//         }
+//     }
 
-//    if(-1 == request_marshall (d->wb, *d->status)){
-//        *d->status=status_general_SOCKS_server_failure;
-//        abort();
-//    }
+// //    if(-1 == request_marshall (d->wb, *d->status)){
+// //        *d->status=status_general_SOCKS_server_failure;
+// //        abort();
+// //    }
 
-    selector_status s=0;
-    s|= selector_set_interest(key->s, *d->client_fd, OP_WRITE);
-    s|= selector_set_interest_key(key, OP_NOOP);
+//     selector_status s=0;
+//     s|= selector_set_interest(key->s, *d->client_fd, OP_WRITE);
+//     s|= selector_set_interest_key(key, OP_NOOP);
 
-//    return SELECTOR_SUCCESS== s ? REQUEST_WRITE:ERROR;
-    return ERROR;
-}
+// //    return SELECTOR_SUCCESS== s ? REQUEST_WRITE:ERROR;
+//     return ERROR;
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Handlers top level de la conexiÃ³n pasiva.
