@@ -1,6 +1,6 @@
 #include "../include/address_utils.h"
 
-
+// https://stackoverflow.com/questions/3736335/tell-whether-a-text-string-is-an-ipv6-address-or-ipv4-address-using-standard-c-s 
 int address_processing(char * address, struct sockaddr_in * addr, struct sockaddr_in6 * addr6, uint16_t port) {
     struct addrinfo hint, *res = NULL;
     int ret;
@@ -27,7 +27,7 @@ int address_processing(char * address, struct sockaddr_in * addr, struct sockadd
         addr6->sin6_port = htons(port);
         return AF_INET6;
     } else {
-        printf("%s is an is unknown address format %d\n",address,res->ai_family);
+        printf("%s is an unknown address format %d\n",address,res->ai_family);
     }
 
    freeaddrinfo(res);

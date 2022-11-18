@@ -5,10 +5,7 @@
 #define STDOUT_DEBUG 1
 #define FILE_DEBUG 2
 
-#ifndef DEBUGGING_FILE
-#define DEBUGGING_FILE
-    FILE * debugging_file;
-#endif
+FILE * debugging_file;
 
 void debug_init(int setting);
 void debug_file_close();
