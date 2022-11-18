@@ -4,6 +4,7 @@
 #define SELECTOR_H_W50GNLODsARolpHbsDsrvYvMsbT
 
 #include <sys/time.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 /**

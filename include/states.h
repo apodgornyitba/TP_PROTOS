@@ -73,7 +73,7 @@ typedef struct copy_st
     /** Interest of the copy */
     fd_interest interest;
     /** Pointer to the structure of the opposing copy state*/
-    struct copy * other_copy;
+    struct copy_st * other_copy;
 };
 
 #endif
