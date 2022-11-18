@@ -59,7 +59,7 @@ typedef struct connecting{
     const int *client_fd;
     int *origin_fd;
     enum socks_reply_status *status;
-};
+}connecting;
 
 /** Used by the COPY state */
 typedef struct copy_st

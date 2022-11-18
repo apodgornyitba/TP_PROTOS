@@ -1,9 +1,12 @@
 #ifndef ADDRESS_UTILS_H
 #define ADDRESS_UTILS_H
+#include <stdio.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 /**
  * Converts an IPv4 or IPV6 address from text to binary (network) format with inet_pton.

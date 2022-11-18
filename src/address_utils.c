@@ -1,9 +1,4 @@
 #include "../include/address_utils.h"
-#include <sys/types.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netdb.h>
 
 
 int address_processing(char * address, struct sockaddr_in * addr, struct sockaddr_in6 * addr6, uint16_t port) {
@@ -16,15 +11,18 @@ int address_processing(char * address, struct sockaddr_in * addr, struct sockadd
 
     ret = getaddrinfo(address, NULL, &hint, &res);
     if(ret) {
-        puts("Invalid address");
+        printf("Invalid address");
         return -1;
     }
+    // IPv4
     if(res->ai_family == AF_INET) {
         addr->sin_family = AF_INET;
         addr->sin_addr.s_addr = inet_addr(address);
         addr->sin_port = htons(port);
         return AF_INET;
-    } else if (res->ai_family == AF_INET6) {
+    }
+    // IPv6
+    else if (res->ai_family == AF_INET6) {
         addr6->sin6_family = AF_INET6;
         addr6->sin6_port = htons(port);
         return AF_INET6;

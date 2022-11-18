@@ -247,7 +247,7 @@ void socksv5_passive_accept(struct selector_key *key) {
 //    d->origin_domain=&ATTACHMENT(key)->origin_domain;
 // }
 
-static unsigned request_process(struct selector_key *key, struct request_st *d);
+// static unsigned request_process(struct selector_key *key, struct request_st *d);
 
 // lee todos los bytes del mensaje de tipo 'request' e inicia su proceso
 // static unsigned request_read(struct selector_key *key)
