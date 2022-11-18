@@ -1,15 +1,3 @@
-/**
- * main.c - servidor proxy socks concurrente
- *
- * Interpreta los argumentos de línea de comandos, y monta un socket
- * pasivo.
- *
- * Todas las conexiones entrantes se manejarán en este hilo.
- *
- * Se descargarÃ¡ en otro hilos las operaciones bloqueantes (resoluciÃ³n de
- * DNS utilizando getaddrinfo), pero toda esa complejidad estÃ¡ oculta en
- * el selector.
- */
 #include <stdio.h>
 #include <string.h>   //strlen
 #include <stdlib.h>
@@ -22,9 +10,9 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <sys/time.h> //FD_SET, FD_ISSET, FD_ZERO macros
-#include "buffer.h"
-#include "selector.h"
-#include "args.h"
+#include "../include/buffer.h"
+#include "../include/selector.h"
+#include "../include/args.h"
 #include <sys/types.h>
 // #include "socks5.h"
 #include <signal.h>

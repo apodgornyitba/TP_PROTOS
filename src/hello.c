@@ -219,7 +219,7 @@ void hello_write_close(const unsigned state, struct selector_key *key)
 {
     char * etiqueta = "HELLO WRITE CLOSE";
     debug(etiqueta, 0, "Starting stage", key->fd);
-    //// Nothing to close or free
+    // Nothing to close or free
     debug(etiqueta, 0, "Finished stage", key->fd);
 }
 
@@ -247,7 +247,6 @@ unsigned hello_write(struct selector_key *key)
             if(SELECTOR_SUCCESS== selector_set_interest_key(key, OP_READ)){
                 ret= REQUEST_READ;
                 debug(etiqueta, 0, "Setting interest to read", key->fd);
-                // TODO CAMBIAR PARA VOLVER AL FLUJO NORMAL
                 ret= REQUEST_CONNECTING;
             }else{
                 debug(etiqueta, 0, "Error, read buffer full", key->fd);
@@ -261,5 +260,4 @@ unsigned hello_write(struct selector_key *key)
 }
 
 void hello_parser_close(struct hello_parser *p){
-    // TODO
 }

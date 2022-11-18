@@ -31,16 +31,14 @@ typedef struct hello_st
 //};
 
 /** Used by the REQUEST_READ, REQUEST_WRITE and REQUEST_RESOLV state */
-enum socks5_response_status {
-    HOLA
-};
+
 typedef struct request_st
 {
     buffer *rb, *wb;
 
 
     struct request request;
-    struct request_parser parser;
+    struct request_parser * parser;
 
 
     enum socks5_response_status status;

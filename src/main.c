@@ -54,7 +54,7 @@ main(const int argc, const char **argv) {
 
 
     /*  Get configurations and users    */
-    int parse_args_result = parse_args(argc, argv, args);
+    int parse_args_result = parse_args(argc, (char * const *) argv, args);
     if(parse_args_result == -1){
         free(args);
         exit(1);
@@ -150,7 +150,7 @@ main(const int argc, const char **argv) {
     debug(etiqueta, 0, "Selector created", 0);
 
 
-    //// Registro los master sockets con interes en leer
+    // Registro los master sockets con interes en leer
     debug(etiqueta, 0, "Registering master sockets", 0);
     const struct fd_handler socksv5 = {
             .handle_read       = socksv5_passive_accept,

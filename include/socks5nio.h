@@ -53,7 +53,7 @@ enum socks_v5state {
     REQUEST_READ,
     REQUEST_RESOLV,
     REQUEST_CONNECTING,
-//    REQUEST_WRITE,
+    REQUEST_WRITE,
     COPY,
 
     // estados terminales
@@ -96,7 +96,7 @@ typedef struct socks5 {
     union {
         struct hello_st           hello;
         struct request_st         request;
-        struct copy_st            copy;
+        struct copy_st *          copy;
     } client;
     /** estados para el origin_fd */
     union {

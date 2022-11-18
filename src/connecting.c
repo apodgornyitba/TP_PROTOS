@@ -59,6 +59,7 @@ unsigned connecting_write(struct selector_key *key){
     char * etiqueta = "CONNECTING WRITE";
     debug(etiqueta, 0, "Starting stage", key->fd);
     debug(etiqueta, 0, "Se completo la conexión -> Cambio de estado a COPY", key->fd);
+    //if (getsockopt(key->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0)
     selector_set_interest_key(key, OP_NOOP);
     struct socks5 * data = key->data;
     selector_register(key->s, data->origin_fd, &socks5_handler, OP_NOOP, data);
