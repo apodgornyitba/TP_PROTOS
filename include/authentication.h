@@ -2,9 +2,7 @@
 #define AUTHENTICATION_H
 
 #include "selector.h"
-#include "socks5nio.h"
-#include "parser.h"
-#include <string.h>
+#include "states.h"
 
 /**
  * @section Authentication
@@ -86,6 +84,6 @@ unsigned auth_write(struct selector_key *key);
 void auth_write_close(unsigned state, struct selector_key *key);
 
 
-int auth_process(struct userpass_st *d, socks5 * data);
+int auth_process(struct userpass_st *d, struct selector_key * data);
 
 #endif

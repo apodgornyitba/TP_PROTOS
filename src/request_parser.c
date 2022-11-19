@@ -1,6 +1,8 @@
 #include "../include/request_parser.h"
 #include "../include/debug.h"
 #include "../include/request.h"
+#include <string.h>
+#include <netinet/in.h>
 
 void set_port(request_parser *parser);
 s
@@ -16,7 +18,7 @@ static void ipv6_address_init(struct sockaddr_in6 *addr);
 
 static int remaining_is_done(request_parser *p);
 
-static void remaining_set(request_parser *p, const int n);
+static void remaining_set(request_parser *p, int n);
 
 static enum request_state address_type(request_parser *p, uint8_t b);
 
@@ -28,7 +30,7 @@ void request_parser_init(struct request_parser *parser) {
     parser->state = request_version;
     parser->read = 0;
     parser->remaining = 0;
-    parser->request = malloc(sizeof(parser->request));
+    parser->request = malloc(sizeof(struct request));
 }
 
 void request_parser_close(struct request_parser *parser) {
@@ -175,7 +177,7 @@ static void ipv4_address_init(struct sockaddr_in *addr) {
 }
 
 static enum request_state dest_address_fqdn(request_parser *p, uint8_t b) {
-    if (b > MAX_FQDN_SIZE)
+    if (b > MAX_FQDN_SIZE-1)
         return request_error;
 
     remaining_set(p, b);
@@ -186,7 +188,7 @@ static enum request_state dest_address_fqdn(request_parser *p, uint8_t b) {
 }
 
 static enum request_state dest_addr(request_parser *p, uint8_t b) {
-    enum request_state next;
+    // enum request_state next;
     switch (p->request->dest_addr_type) {
         case socks_req_addrtype_ipv4: {
             struct sockaddr_in *address = (struct sockaddr_in *) &(p->request->dest_addr);

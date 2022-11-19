@@ -1,4 +1,5 @@
 #include "../include/resolv.h"
+#include <string.h>
 
 void *request_resolv_blocking(void *ptr) {
     char *etiqueta = "REQUEST RESOLV BLOCKING";
@@ -35,7 +36,7 @@ void *request_resolv_blocking(void *ptr) {
     snprintf(buff, sizeof(buff), "%d", port);
 
     //// Just debugging
-    char *buffer = malloc(sizeof(fqdn.size + 1));
+    char *buffer = malloc((fqdn.size + 1));
     for (int i = 0; i < fqdn.size; ++i) {
         buffer[i] = fqdn.host[i];
     }
@@ -90,6 +91,7 @@ unsigned request_resolv_done(struct selector_key *key) {
         data->origin_addr_len = sizeof(struct sockaddr);
         memcpy((struct sockaddr *) &(data->origin_addr), current->ai_addr, sizeof(struct sockaddr));
     }
+    debug(etiqueta, 0, "", key->fd);
     debug(etiqueta, 0, "Finishing stage", key->fd);
     return REQUEST_CONNECTING;
 }

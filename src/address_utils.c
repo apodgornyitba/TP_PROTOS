@@ -1,4 +1,5 @@
 #include "../include/address_utils.h"
+#include <string.h>
 
 // https://stackoverflow.com/questions/3736335/tell-whether-a-text-string-is-an-ipv6-address-or-ipv4-address-using-standard-c-s 
 int address_processing(char * address, struct sockaddr_in * addr, struct sockaddr_in6 * addr6, uint16_t port) {

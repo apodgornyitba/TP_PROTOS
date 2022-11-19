@@ -1,26 +1,21 @@
 /**
  * socks5nio.c  - controla el flujo de un proxy SOCKSv5 (sockets no bloqueantes)
  */
-#include<stdio.h>
+#include <netdb.h>
 #include <stdlib.h>  // malloc
 #include <string.h>  // memset
-#include <assert.h>  // assert
-#include <errno.h>
-#include <time.h>
 #include <unistd.h>  // close
-#include <pthread.h>
 #include <arpa/inet.h>
 
 #include "../include/hello.h"
 #include "../include/authentication.h"
-#include "../include/request.h"
 #include "../include/buffer.h"
 #include "../include/socks5nio.h"
 #include "../include/stm.h"
 #include "../include/debug.h"
-#include "../include/netutils.h"
 #include "../include/connecting.h"
-#include "../include/stm.h"
+#include "copy.h"
+#include "resolv.h"
 
 #define N(x) (sizeof(x)/sizeof((x)[0]))
 

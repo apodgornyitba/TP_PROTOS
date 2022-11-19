@@ -1,28 +1,14 @@
 #ifndef REQUEST_H
 #define REQUEST_H
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
 #include "buffer.h"
 #include "selector.h"
-//#include "states.h"
-#include "socks5nio.h"
-#include "stm.h"
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include "buffer.h"
-#include <netdb.h>
-#include <sys/types.h>
+#include "states.h"
 #include <sys/socket.h>
-#include <pthread.h>
-#include "address_utils.h"
+#include <netinet/in.h>
 #include "request_parser.h"
-#include "resolv.h"
 
 #define MAX_FQDN_SIZE 0xFF
-#define MSG_NOSIGNAL 0x2000
 
 typedef enum socks_cmd
 {
@@ -46,7 +32,7 @@ struct sockaddr_fqdn{
 struct request
 {
     enum socks_cmd cmd;
-    enum socks_atype * dest_addr_type;
+    enum socks_atyp dest_addr_type;
     union {
         struct sockaddr_storage dest_addr;
         struct sockaddr_fqdn fqdn;

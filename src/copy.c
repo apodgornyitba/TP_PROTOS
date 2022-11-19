@@ -1,9 +1,5 @@
 #include "../include/copy.h"
-// #ifndef MSG_NOSIGNAL
-// //// For mac compilation only
-// #define MSG_NOSIGNAL 0x2000  /* don't raise SIGPIPE */
-// #endif
-
+#include <stdlib.h>
 
 fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
 {
@@ -37,7 +33,7 @@ void copy_init(const unsigned int state, struct selector_key *key) {
     char * etiqueta = "COPY INIT";
     debug(etiqueta, 0, "Starting stage", key->fd);
 
-    struct copy_st *d = ATTACHMENT(key)->client.copy;
+    struct copy_st *d = &ATTACHMENT(key)->client.copy;
     d->fd = ATTACHMENT(key)->client_fd;
     d->rb = &ATTACHMENT(key)->read_buffer;
     d->wb = &ATTACHMENT(key)->write_buffer;

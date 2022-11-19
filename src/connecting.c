@@ -124,9 +124,13 @@ void connecting_close(const unsigned state, struct selector_key *key){
     debug(etiqueta, 0, "Starting stage", key->fd);
     struct request_st *d = &ATTACHMENT(key)->client.request;
     request_parser_close(d->parser);
-    free(d->parser);
-    d->parser = NULL;
-    freeaddrinfo(ATTACHMENT(key)->origin_resolution);
+    if(d->parser != NULL) {
+        request_parser_close(d->parser);
+        free(d->parser);
+    }
+     if(ATTACHMENT(key)->origin_resolution != NULL) {
+        freeaddrinfo(ATTACHMENT(key)->origin_resolution);
+    }
     debug(etiqueta, 0, "Finished stage", key->fd);
 }
 
@@ -170,7 +174,7 @@ void connection(struct selector_key *key){
 
     if(connectResult != 0 && errno != EINPROGRESS){
         debug(etiqueta, connectResult, "Connection for origin socket failed", key->fd);
-        *data->client.request.status = errno_to_socks(errno);
+        data->client.request.status = errno_to_socks(errno);
         goto fail;
     }
 

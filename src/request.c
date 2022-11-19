@@ -1,6 +1,18 @@
 #include <sys/errno.h>
 #include "../../include/request.h"
 
+#include <stdint.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include "buffer.h"
+#include "selector.h"
+#include "states.h"
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <pthread.h>
+#include "request_parser.h"
+#include "resolv.h"
 #define IPV4_LEN 4
 #define IPV6_LEN 16
 
@@ -16,11 +28,13 @@ request_init(const unsigned state, struct selector_key *key)
 
     d->parser = malloc(sizeof(*(d->parser)));
     request_parser_init(d->parser);
+    d->parser->request = malloc(sizeof(*d->parser->request));
 
-    d->status= malloc(sizeof(enum socks_reply_status));
-    *(d->status)=status_succeeded;
+    //Status
+    //d->status= malloc(sizeof(enum socks_reply_status));
+    *d->status=status_succeeded;
 
-    d->client_fd= &ATTACHMENT(key)->client_fd;
+    d->client_fd=&ATTACHMENT(key)->client_fd;
     d->origin_fd=&ATTACHMENT(key)->origin_fd;
 
     d->origin_addr=&ATTACHMENT(key)->origin_addr;
@@ -33,9 +47,12 @@ request_init(const unsigned state, struct selector_key *key)
 void request_close(const unsigned state, struct selector_key *key){
     char * etiqueta = "REQUEST CLOSE";
     debug(etiqueta, 0, "Starting stage", key->fd);
-//    struct request_st *d = &ATTACHMENT(key)->client.request;
-//    request_parser_close(d->parser);
-//    free(d->parser);
+    if(ATTACHMENT(key)->client.request.parser->request->dest_addr_type != socks_req_addrtype_domain){
+        struct request_st *d = &ATTACHMENT(key)->client.request;
+        request_parser_close(d->parser);
+        free(d->parser);
+        d->parser=NULL;
+    }
     debug(etiqueta, 0, "Finished stage", key->fd);
 }
 
@@ -122,9 +139,9 @@ unsigned request_process(struct selector_key *key, struct request_st *d)
         return REQUEST_WRITE;
     }
 
-    int family;
-    uint16_t port;
-    struct sockaddr_storage * addr;
+    // int family;
+    // uint16_t port;
+    // struct sockaddr_storage * addr;
 
     switch (d->parser->request->dest_addr_type) {
 
@@ -172,6 +189,7 @@ unsigned request_process(struct selector_key *key, struct request_st *d)
                     data->orig.conn.status = status_general_socks_server_failure;
                     request_marshall(data->orig.conn.status, &data->write_buffer);
                     selector_set_interest_key(key, OP_WRITE);
+                    free(k);
                     return REQUEST_WRITE;
                 }
 
@@ -183,14 +201,12 @@ unsigned request_process(struct selector_key *key, struct request_st *d)
             }
             default: {
                 debug(etiqueta, 0, "Address type not supported -> REQUEST_WRITE to reply error to client", key->fd);
-                *(d->status)=status_address_type_not_supported;
+                data->orig.conn.status = status_address_type_not_supported;
                 request_marshall(data->orig.conn.status, &data->write_buffer);
                 selector_set_interest_key(key, OP_WRITE);
                 return REQUEST_WRITE;
             }
-
     }
-
     return ret;
 }
 
