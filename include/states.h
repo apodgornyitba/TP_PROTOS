@@ -42,7 +42,7 @@ typedef struct request_st
     struct request_parser * parser;
 
 
-    enum socks5_reply_status status;
+    enum socks5_reply_status * status;
 
     struct sockaddr_storage *origin_addr;
     socklen_t *origin_addr_len;
