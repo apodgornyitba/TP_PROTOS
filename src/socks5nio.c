@@ -53,9 +53,9 @@ static const struct state_definition client_statbl[] = {
         },
         {
                 .state = USERPASS_WRITE,
-                .on_arrival = userpass_write_init,
-                .on_departure = userpass_write_close,
-                .on_write_ready = userpass_write,
+                .on_arrival = auth_write_init,
+                .on_write_ready = auth_write,
+                .on_departure = auth_write_close,
         },
         {
                 .state = REQUEST_READ,
@@ -69,21 +69,23 @@ static const struct state_definition client_statbl[] = {
 //                .on_departure = resolve_close,
 //                .on_read_ready = resolve_read,
 //                .on_write_ready = resolve_write,
+                .on_block_ready= request_resolv_done,
         },
         {
                 .state = REQUEST_CONNECTING,
                 .on_arrival = connecting_init,
-                .on_read_ready = connecting_read,
+                // .on_read_ready = connecting_read,
                 .on_write_ready = connecting_write,
 //                .on_departure = connecting_close,
         },
         {
                 .state = REQUEST_WRITE,
-                .on_arrival = request_init,
-                .on_departure = request_close,
-                .on_read_ready = request_write,
+                // .on_arrival = request_init,
+                // .on_departure = request_close,
+                // .on_read_ready = request_write,
+                .on_write_ready = request_write,
         },
-        {   .state = COPY,
+        {       .state = COPY,
                 .on_arrival = copy_init,
                 .on_read_ready = copy_read,
                 .on_write_ready = copy_write,
@@ -96,7 +98,8 @@ static const struct state_definition client_statbl[] = {
         {
                 .state = ERROR,
                 // No now, no need to define any handlers, all in sockv5_done
-        }};
+        }
+};
 
 
 /**

@@ -23,7 +23,7 @@ typedef struct userpass_st
     /** Buffers used for IO */
     buffer *rb, *wb;
     /** Pointer to hello parser */
-    struct parser parser;
+    struct parser * parser;
     /** Selected user */
     //uint8_t * user;
     /** Selected password */

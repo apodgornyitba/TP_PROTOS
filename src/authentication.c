@@ -179,7 +179,6 @@ void auth_write(struct selector_key *key){
         if(!buffer_can_read(d->wb)){
             if(SELECTOR_SUCCESS== selector_set_interest_key(key, OP_READ)){
                 debug(etiqueta, 0, "Setting interest to read", key->fd);
-                // TODO Change this
                 ret= REQUEST_CONNECTING;
             }else{
                 debug(etiqueta, 0, "Error on selector", key->fd);

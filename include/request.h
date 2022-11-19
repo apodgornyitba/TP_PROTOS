@@ -56,17 +56,22 @@ enum socks_atyp
     socks_req_addrtype_ipv6 = 0x04,
 };
 
+struct sockaddr_fqdn{
+    char host[MAX_FQDN_SIZE];
+    ssize_t size;
+};
+
 union socks_addr
 {
-    char fqdn[MAX_FQDN_SIZE];
+    struct sockaddr_fqdn fqdn;
     struct sockaddr_in ipv4;
     struct sockaddr_in6 ipv6;
 };
 
 struct request
 {
-//    enum socks_req_cmd cmd;
-//    enum socks_addr_type dest_addr_type;
+    enum socks_cmd cmd;
+    enum socks_type dest_addr_type;
     union socks_addr dest_addr;
     in_port_t dest_port;
 };
@@ -81,20 +86,6 @@ typedef struct request_parser
     //bytes leidos
     uint8_t read;
 } request_parser;
-
-enum socks_reply_status
-{
-    status_succeeded = 0x00,
-    status_general_socks_server_failure = 0x01,
-    status_connection_not_allowed_by_ruleset = 0x02,
-    status_network_unreachable = 0x03,
-    status_host_unreachable = 0x04,
-    status_connection_refused = 0x05,
-    status_ttl_expired = 0x06,
-    status_command_not_supported = 0x07,
-    status_address_type_not_supported = 0x08,
-};
-
 
 /** inicializa el parser **/
 void request_parser_init(request_parser *p);
@@ -166,7 +157,7 @@ unsigned request_write(struct selector_key *key);
 /** procesa el request ya parsead0 **/
 unsigned request_process(struct selector_key *key, struct request_st *d);
 
-/** entrega un byte al parser. Retorna true si se llego al final **/
+/** entrega un byte al parser. **/
 enum request_state request_parser_feed(request_parser *p, uint8_t b);
 
 /** consume los bytes del mensaje del cliente y se los entrega al parser
@@ -175,24 +166,25 @@ enum request_state request_parser_feed(request_parser *p, uint8_t b);
 enum request_state request_consume(buffer *b, request_parser *p, bool *error);
 
 /**
- * TODO: pasarlas a connect.h
  * @param key
  * @param d
  * @return
  */
-unsigned request_connect(struct selector_key *key, struct request_st *d);
-unsigned request_connecting(struct selector_key *key);
+//unsigned request_connect(struct selector_key *key, struct request_st *d);
+//unsigned request_connecting(struct selector_key *key);
 
 /** function to use on a thread to resolv dns without blocking**/
 void * request_resolv_blocking(void *data);
+
+unsigned request_resolv_done(struct selector_key *key);
 
 bool request_is_done(const enum request_state state, bool *error);
 
 /** ensambla la respuesta del request dentro del buffer con el metodo
  * seleccionado.
 **/
-int request_marshal(buffer *b, const enum socks_reply_status status, const enum socks_atyp atyp, const union socks_addr addr, const in_port_t dest_port);
+//int request_marshal(buffer *b, const enum socks_reply_status status, const enum socks_atyp atyp, const union socks_addr addr, const in_port_t dest_port);
 
-enum socks_reply_status errno_to_socks(int e);
+//enum socks_reply_status errno_to_socks(int e);
 
 #endif
