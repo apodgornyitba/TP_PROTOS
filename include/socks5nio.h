@@ -94,14 +94,14 @@ typedef struct socks5 {
 
     /** estados para el client_fd */
     union {
-        struct hello_st           hello;
-        struct request_st         request;
+        struct hello_st *           hello;
+        struct request_st *        request;
         struct copy_st *          copy;
     } client;
     /** estados para el origin_fd */
     union {
-        struct connecting         conn;
-        struct copy_st            copy;
+        struct connecting *        conn;
+        struct copy_st *           copy;
     } orig;
 
     uint8_t raw_buff_a[2048], raw_buff_b[2048];

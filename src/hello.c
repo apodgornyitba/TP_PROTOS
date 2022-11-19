@@ -169,7 +169,7 @@ unsigned hello_read(struct selector_key *key) {
         buffer_write_adv(d->rb, n);
         debug(label, n, "Finished reading", key->fd);
         debug(label, n, "Starting hello consume", key->fd);
-        const enum hello_state st = hello_consume(d->rb, &d->parser, &error);
+        const enum hello_state st = hello_consume(d->rb, d->parser, &error);
         if(hello_is_done(st, 0)) {
             debug(label, error, "Finished hello consume", key->fd);
             debug(label, 0, "Setting selector interest to write", key->fd);
@@ -210,7 +210,7 @@ void hello_read_close(const unsigned state, struct selector_key *key)
     char * label = "HELLO READ CLOSE";
     debug(label, 0, "Starting stage", key->fd);
     struct hello_st *d = &ATTACHMENT(key)->client.hello;
-    hello_parser_close(&d->parser);
+    hello_parser_close(d->parser);
     free(d->parser);
     debug(label, 0, "Finished stage", key->fd);
 }
