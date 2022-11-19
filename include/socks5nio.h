@@ -94,12 +94,13 @@ typedef struct socks5 {
     /** estados para el client_fd */
     union {
         struct hello_st         hello;
-        struct request_st *       request;
+        struct userpass_st        userpass;
+        struct request_st       request;
         struct copy_st          copy;
     } client;
     /** estados para el origin_fd */
     union {
-        struct connecting         conn;
+        struct connecting       conn;
         struct copy_st          copy;
     } orig;
 
@@ -129,5 +130,6 @@ struct users {
 
 /** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
 #define ATTACHMENT(key) ( (struct socks5 *)(key)->data)
+
 
 #endif

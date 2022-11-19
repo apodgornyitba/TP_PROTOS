@@ -174,7 +174,7 @@ void auth_write_init(unsigned state, struct selector_key *key){
  * Checks authentication and wirtes answer to client
  * @param key
  */
-void auth_write(struct selector_key *key){
+unsigned auth_write(struct selector_key *key){
     char *etiqueta = "AUTH WRITE";
     debug(etiqueta, 0, "Starting stage", key->fd);
     struct userpass_st *d = &ATTACHMENT(key)->client.userpass;

@@ -5,7 +5,7 @@
 #include <netinet/in.h>
 
 void set_port(request_parser *parser);
-s
+
 enum request_state dest_port(request_parser *p, uint8_t b);
 
 static enum request_state dest_addr(request_parser *p, uint8_t b);

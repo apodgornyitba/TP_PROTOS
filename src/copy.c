@@ -45,7 +45,7 @@ void copy_init(const unsigned int state, struct selector_key *key) {
     d->rb = &ATTACHMENT(key)->write_buffer;
     d->wb = &ATTACHMENT(key)->read_buffer;
     d->interest = OP_READ | OP_WRITE;
-    d->other_copy = ATTACHMENT(key)->client.copy;
+    d->other_copy = &ATTACHMENT(key)->client.copy;
 
     copy_compute_interests(key->s, d);
     copy_compute_interests(key->s, d->other_copy);

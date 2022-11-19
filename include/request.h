@@ -2,11 +2,14 @@
 #define REQUEST_H
 
 #include "buffer.h"
+#include "resolv.h"
 #include "selector.h"
 #include "states.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "request_parser.h"
+#include "socks5nio.h"
+
 
 #define MAX_FQDN_SIZE 0xFF
 

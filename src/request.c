@@ -1,5 +1,5 @@
 #include <sys/errno.h>
-#include "../../include/request.h"
+#include "../include/request.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -32,7 +32,7 @@ request_init(const unsigned state, struct selector_key *key)
 
     //Status
     //d->status= malloc(sizeof(enum socks_reply_status));
-    *d->status=status_succeeded;
+    d->status=status_succeeded;
 
     d->client_fd=&ATTACHMENT(key)->client_fd;
     d->origin_fd=&ATTACHMENT(key)->origin_fd;
