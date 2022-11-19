@@ -5,11 +5,9 @@
 #include "socks5nio.h"
 #include "stm.h"
 //#include "states.h"
-/**
- * Etapa de conexión
- * Actualmente se conecta a un destino fijo.
- * Cuando termina pasa al estado COPY.
- */
+#include "address_utils.h"
+#include <netinet/in.h>
+
 /**
  * @param state
  * @param key
@@ -24,5 +22,6 @@ unsigned connecting_write(struct selector_key *key);
  * @param key
  * @return
  */
-unsigned connecting_read(struct selector_key *key);
+void connecting_close(const unsigned state, struct selector_key *key);
+
 #endif

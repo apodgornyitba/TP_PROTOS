@@ -8,6 +8,7 @@
 #include "stm.h"
 #include "copy.h"
 #include "request.h"
+#include "request_parser.h"
 
 /* handler del socket pasivo que atiende conexiones socksv5 */
 void socksv5_passive_accept(struct selector_key * key);

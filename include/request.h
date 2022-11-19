@@ -17,81 +17,42 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <pthread.h>
+#include "address_utils.h"
+#include "request_parser.h"
+#include "resolv.h"
 
 #define MAX_FQDN_SIZE 0xFF
-// #define MSG_NOSIGNAL 0x2000  /* don't raise SIGPIPE */
+#define MSG_NOSIGNAL 0x2000
 
-
-enum request_state
-{
-    request_version,
-    request_cmd,
-    request_rsv,
-    request_atyp,
-    request_dest_addr,
-    request_dest_addr_fqdn,
-    request_dest_port,
-
-    // done section
-    request_done,
-
-    //error section
-    request_error,
-    request_error_unsupported_cmd,
-    request_error_unsupported_type,
-    request_error_unsupported_version,
-};
-
-enum socks_cmd
+typedef enum socks_cmd
 {
     socks_req_cmd_connect = 0x01,
     socks_req_cmd_bind = 0x02,
     socks_req_cmd_associate= 0x03,
-};
+}socks_cmd;
 
-enum socks_atyp
+typedef enum socks_atyp
 {
     socks_req_addrtype_ipv4 = 0x01,
     socks_req_addrtype_domain = 0x03,
     socks_req_addrtype_ipv6 = 0x04,
-};
+}socks_atyp;
 
 struct sockaddr_fqdn{
     char host[MAX_FQDN_SIZE];
     ssize_t size;
 };
 
-union socks_addr
-{
-    struct sockaddr_fqdn fqdn;
-    struct sockaddr_in ipv4;
-    struct sockaddr_in6 ipv6;
-};
-
 struct request
 {
     enum socks_cmd cmd;
-    enum socks_type dest_addr_type;
-    union socks_addr dest_addr;
+    enum socks_atype * dest_addr_type;
+    union {
+        struct sockaddr_storage dest_addr;
+        struct sockaddr_fqdn fqdn;
+    };
     in_port_t dest_port;
 };
-
-typedef struct request_parser
-{
-    struct request *request;
-
-    enum request_state state;
-    //bytes que faltan leer
-    uint8_t remaining;
-    //bytes leidos
-    uint8_t read;
-} request_parser;
-
-/** inicializa el parser **/
-void request_parser_init(request_parser *p);
-
-/** cierra el parser **/
-void request_parser_close(struct request_parser* parser);
 
 /** inicializa el request_st **/
 void request_init(const unsigned state, struct selector_key *key);
@@ -170,20 +131,12 @@ enum request_state request_consume(buffer *b, request_parser *p, bool *error);
  * @param d
  * @return
  */
-//unsigned request_connect(struct selector_key *key, struct request_st *d);
-//unsigned request_connecting(struct selector_key *key);
-
-/** function to use on a thread to resolv dns without blocking**/
-void * request_resolv_blocking(void *data);
-
-unsigned request_resolv_done(struct selector_key *key);
-
 bool request_is_done(const enum request_state state, bool *error);
 
 /** ensambla la respuesta del request dentro del buffer con el metodo
  * seleccionado.
 **/
-//int request_marshal(buffer *b, const enum socks_reply_status status, const enum socks_atyp atyp, const union socks_addr addr, const in_port_t dest_port);
+int request_marshall(int status, buffer * b);
 
 //enum socks_reply_status errno_to_socks(int e);
 
