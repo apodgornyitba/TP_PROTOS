@@ -32,6 +32,7 @@ typedef struct hello_st
 
 /** Used by the REQUEST_READ, REQUEST_WRITE and REQUEST_RESOLV state */
 
+
 typedef struct request_st
 {
     buffer *rb, *wb;
@@ -41,7 +42,7 @@ typedef struct request_st
     struct request_parser * parser;
 
 
-    enum socks5_response_status * status;
+    enum socks5_reply_status status;
 
     struct sockaddr_storage *origin_addr;
     socklen_t *origin_addr_len;
