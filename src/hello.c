@@ -17,7 +17,7 @@ enum hello_state hello_parser_feed(struct hello_parser *p, uint8_t b)
     switch (p->state)
     {
         case hello_version:
-            if (b == 0x05)
+            if (b == p->version)
             {
                 debug(label, b, "Hello version supported", 0);
                 p->state = hello_nmethods;
@@ -116,15 +116,14 @@ int hello_marshal(buffer *b, const uint8_t method)
     return 2;
 }
 
+extern uint8_t auth_method;
 /** callback del parser utilizado en `read_hello' */
 static void on_hello_method(void *p, const uint8_t method) {
    char * label = "ON HELLO METHOD";
     uint8_t *selected  = p;
     debug(label, method, "Possible method from client list of methods", 0);
-    // if(METHOD_NO_AUTHENTICATION_REQUIRED == method) {
-    //     debug(label, method, "New method selected, METHOD_NO_AUTHENTICATION_REQUIRED", 0);
-    if(0x02 == method){
-        debug(label, method, "New method selected, USERPASS", 0);
+    if(auth_method == method) {
+        debug(label, method, "New method selected", 0);
         *selected = method;
     }
 }
@@ -140,6 +139,10 @@ void hello_read_init(const unsigned state, struct selector_key *key) {
     d->parser = malloc(sizeof(*(d->parser)));
     d->parser->data = &(d->method);
     d->parser->on_authentication_method = on_hello_method;
+    if(ATTACHMENT(key)->isSocks)
+        d->parser->version = SOCKS_VERSION;
+    else 
+        d->parser->version = MNG_VERSION;
     hello_parser_init(d->parser);
     debug(label, 0, "Finished stage", key->fd);
 }
@@ -177,21 +180,25 @@ unsigned hello_read(struct selector_key *key) {
             debug(label, error, "Finished hello consume", key->fd);
             debug(label, 0, "Setting selector interest to write", key->fd);
             if(SELECTOR_SUCCESS == selector_set_interest_key(key, OP_WRITE)) {
-                ret = hello_process(d);
+                int result;
+                result = hello_process(d);
+                if(result == -1)
+                    ret = ATTACHMENT(key)->error_state;
+                else ret = result;
             } else {
-                ret = ERROR;
+                ret = ATTACHMENT(key)->error_state;
             }
         }
     } else {
         debug(label, n, "Error, nothing to read", key->fd);
-        ret = ERROR;
+                ret = ATTACHMENT(key)->error_state;
     }
     debug(label, error, "Finished stage", key->fd);
-    return error ? ERROR : ret;
+    return error ? ATTACHMENT(key)->error_state : ret;
 }
 
 /** procesamiento del mensaje `hello' */
-static unsigned hello_process(const struct hello_st* d) {
+static int hello_process(const struct hello_st* d) {
     char * label = "HELLO PROCESS";
     debug(label, 0, "Starting input from client processing", 0);
     unsigned ret = HELLO_WRITE;
@@ -200,7 +207,7 @@ static unsigned hello_process(const struct hello_st* d) {
     // const uint8_t r = (m == METHOD_NO_ACCEPTABLE_METHODS) ? 0xFF : 0x00;
     debug(label, m, "Method selected", 0);
     if (-1 == hello_marshal(d->wb, m)) {
-        ret  = ERROR;
+        ret  = -1;
     }
     debug(label, ret, "Finished input from client processing", 0);
     return ret;
@@ -241,9 +248,9 @@ unsigned hello_write(struct selector_key *key)
     n= send(key->fd, ptr, count, MSG_NOSIGNAL);
 
     if(n==-1){
-                debug(label, 0, "Error on send", key->fd);
+        debug(label, 0, "Error on send", key->fd);
         debug(label, 0, "Finished stage", key->fd);
-        return ERROR;
+        return ATTACHMENT(key)->error_state;
     }
 
     buffer_read_adv(d->wb,n);
@@ -251,14 +258,17 @@ unsigned hello_write(struct selector_key *key)
         if(d->method == METHOD_NO_ACCEPTABLE_METHODS){
             debug(label, 0, "No acceptable methods -> CLOSING CONNECTION", key->fd);
             debug(label, 0, "Finished stage", key->fd);
-            return DONE;
+            return ATTACHMENT(key)->done_state;
         }
         if(SELECTOR_SUCCESS== selector_set_interest_key(key, OP_READ)){
             debug(label, 0, "Succeed, setting interest to read", key->fd);
-            ret= USERPASS_READ;
+            if(d->method == METHOD_NO_AUTHENTICATION_REQUIRED)
+                ret = REQUEST_CONNECTING;
+            if(d->method == METHOD_USERNAME_PASSWORD)
+                ret= USERPASS_READ;
         }else{
             debug(label, 0, "Error on selector set interest", key->fd);
-            ret=ERROR;
+            ret=ATTACHMENT(key)->error_state;
         }
     }
 

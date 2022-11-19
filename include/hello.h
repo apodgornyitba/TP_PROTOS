@@ -9,6 +9,10 @@
 //#include "states.h"
 #include "socks5nio.h"
 #include "stm.h"
+
+#define SOCKS_VERSION 0x05
+#define MNG_VERSION 0x01
+
 /**
 //    The client connects to the server, and sends a version
 //    identifier/method selection message:
@@ -74,6 +78,9 @@ typedef struct hello_parser{
 
     /********* zona privada *********/
     enum hello_state state;
+
+    uint8_t version;
+
     /* cantidad de metodos que faltan por leer */
     uint8_t remaining;
 }hello_parser;
@@ -150,7 +157,7 @@ unsigned hello_read(struct selector_key *key);
  * @param d
  * @return
  */
-static unsigned hello_process(const struct hello_st* d);
+static int hello_process(const struct hello_st* d);
 
 /**
  * Close hello read resources

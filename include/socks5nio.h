@@ -91,11 +91,17 @@ typedef struct socks5 {
     /** maquinas de estados */
     struct state_machine          stm;
 
+    int error_state;
+    int done_state;
+
+    bool isSocks;
+
     /** estados para el client_fd */
     union {
         struct hello_st         hello;
-        struct userpass_st        userpass;
+        struct userpass_st      userpass;
         struct request_st       request;
+        struct mng_request_st   mng_request;
         struct copy_st          copy;
     } client;
     /** estados para el origin_fd */
@@ -117,6 +123,8 @@ typedef struct socks5 {
     uint8_t authentication;
 
 }socks5;
+
+static void socks5_destroy(struct socks5 *s);
 
 /**
  * Par username password

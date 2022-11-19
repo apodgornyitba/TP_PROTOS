@@ -26,13 +26,37 @@
 #include <netinet/tcp.h>
 #include "../include/socket_utils.h"
 #include "../include/address_utils.h"
+#include "../include/management.h"
 //#include "socks5.h"
 #include "../include/selector.h"
 #include "../include/socks5nio.h"
 #include "../include/args.h"
 #include "../include/debug.h"
+#include "../include/management.h"
+
 #define SELECTOR_INITIAL_ELEMENTS 1024
 static bool done = false;
+#define DEFAULT_AUTH_METHOD 0x02
+uint8_t auth_method = DEFAULT_AUTH_METHOD;
+#define DEFAULT_PASSWORD_DISSECTORS_MODE 0
+uint8_t password_dissectors = DEFAULT_PASSWORD_DISSECTORS_MODE;
+
+// Historic connections
+unsigned int metrics_historic_connections = 0;
+// Concurrent connections
+unsigned int metrics_concurrent_connections = 0;
+// Max concurrent connections
+unsigned int metrics_max_concurrent_connections = 0;
+// Historic byte transfer
+unsigned int metrics_historic_byte_transfer = 0;
+// Historic auth attempts
+unsigned int metrics_historic_auth_attempts = 0;
+// Historic connections attempts
+unsigned int metrics_historic_connections_attempts = 0;
+// Average bytes per read
+unsigned int metrics_average_bytes_per_read = 0;
+// Average bytes per write
+unsigned int metrics_average_bytes_per_write = 0;
 
 
 static void sigterm_handler(const int signal) {
@@ -43,8 +67,7 @@ static void sigterm_handler(const int signal) {
 struct users users[MAX_USERS];
 int nusers = 0;
 
-int
-main(const int argc, const char **argv) {
+int main(const int argc, const char **argv) {
 
     printf("Inicializando server...\n");
     /*  New empty args struct           */
@@ -57,7 +80,9 @@ main(const int argc, const char **argv) {
 
 
     /*  Get configurations and users    */
-    int parse_args_result = parse_args(argc, (char * const *) argv, args);
+    // TODO Ver el casteo este
+    int parse_args_result = parse_args(argc, (char *const *)argv, args);
+
     if(parse_args_result == -1){
         free(args);
         exit(1);
@@ -75,7 +100,7 @@ main(const int argc, const char **argv) {
     selector_status   ss      = SELECTOR_SUCCESS;
     fd_selector selector      = NULL;
 
-    //// Creación de sockets master 
+    //// Creación de sockets master /////////////////////////////////////////////////////////////////
     debug(etiqueta, 0, "Starting master sockets creation", 0);
     int socket6 = -1;
     int socket = -1;
@@ -126,11 +151,67 @@ main(const int argc, const char **argv) {
     }
     debug(etiqueta, 0, "Master sockets creation finished.", 0);
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //// Creación de sockets master de management /////////////////////////////////////////////////////////////////
+    debug(etiqueta, 0, "Starting management master sockets creation", 0);
+    int mng_socket6 = -1;
+    int mng_socket = -1;
+    if(args->mng_family == AF_UNSPEC){
+        debug(etiqueta, AF_UNSPEC, "Management address unspecified -> IPv4 and IPv6 socket", 0);
+
+        //// Creo sockets para IPv4 y IPv6
+        mng_socket = create_socket(AF_INET, &(args->mng_addr_info), NULL);
+        if(mng_socket == -1){
+            err_msg = "Error creating IPv4 socket";
+            goto finally;
+        }
+
+        mng_socket6 = create_socket(AF_INET6, NULL, &args->mng_addr_info_6);
+        if(mng_socket6 == -1){
+            err_msg = "Error creating IPv6 socket";
+            goto finally;
+        }
+
+        debug(etiqueta, 0, args->mng_addr, args->mng_port);
+        debug(etiqueta, 0, args->mng_addr_6, args->mng_port);
+    }
+    if(args->mng_family == AF_INET){
+
+        debug(etiqueta, AF_UNSPEC, "IPv4 management address -> Creating socket", 0);
+
+        //// Creo sockets para IPv4
+        mng_socket = create_socket(AF_INET, &args->mng_addr_info, NULL);
+        if(mng_socket == -1){
+            err_msg = "Error creating IPv4 socket";
+            goto finally;
+        }
+
+        debug(etiqueta, 0, args->mng_addr, args->mng_port);
+    }
+    if(args->mng_family == AF_INET6){
+
+        debug(etiqueta, AF_UNSPEC, "IPv6 management address -> Creating socket", 0);
+
+        //// Creo sockets para IPv6
+        mng_socket6 = create_socket(AF_INET6, NULL, &args->mng_addr_info_6);
+        if(mng_socket6 == -1){
+            err_msg = "Error creating IPv6 socket";
+            goto finally;
+        }
+
+        debug(etiqueta, 0, args->mng_addr_6, args->mng_port);
+    }
+    debug(etiqueta, 0, "Master management sockets creation finished.", 0);
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
     // registrar sigterm es Util para terminar el programa normalmente.
     // esto ayuda mucho en herramientas como valgrind.
     signal(SIGTERM, sigterm_handler);
     signal(SIGINT,  sigterm_handler);
+
 
     debug(etiqueta, 0, "Starting selector creation", 0);
     const struct selector_init conf = {
@@ -153,7 +234,7 @@ main(const int argc, const char **argv) {
     debug(etiqueta, 0, "Selector created", 0);
 
 
-    // Registro los master sockets con interes en leer
+    //// Registro los master sockets con interes en leer
     debug(etiqueta, 0, "Registering master sockets", 0);
     const struct fd_handler socksv5 = {
             .handle_read       = socksv5_passive_accept,
@@ -161,17 +242,17 @@ main(const int argc, const char **argv) {
             .handle_close      = NULL, // nada que liberar
     };
     if(args->socks_family == AF_UNSPEC){
-        ss = selector_register(selector, socket6, &socksv5,OP_READ, NULL);
+        ss |= selector_register(selector, socket6, &socksv5,OP_READ, NULL);
         debug(etiqueta, ss, "Registered IPv6 master socket on selector", socket6);
-        ss = selector_register(selector, socket, &socksv5,OP_READ, NULL);
+        ss |= selector_register(selector, socket, &socksv5,OP_READ, NULL);
         debug(etiqueta, ss, "Registered IPv4 master socket on selector", socket);
     }
     if(args->socks_family == AF_INET){
-        ss = selector_register(selector, socket, &socksv5,OP_READ, NULL);
+        ss |= selector_register(selector, socket, &socksv5,OP_READ, NULL);
         debug(etiqueta, ss, "Registering IPv4 master socket on selector", 0);
     }
     if(args->socks_family == AF_INET6){
-        ss = selector_register(selector, socket6, &socksv5,OP_READ, NULL);
+        ss |= selector_register(selector, socket6, &socksv5,OP_READ, NULL);
         debug(etiqueta, ss, "Registering IPv6 master socket on selector", 0);
     }
     if(ss != SELECTOR_SUCCESS) {
@@ -179,6 +260,34 @@ main(const int argc, const char **argv) {
         goto finally;
     }
     debug(etiqueta, 0, "Done registering master sockets", 0);
+
+    //// Registro los management master sockets con interes en leer
+    debug(etiqueta, 0, "Registering master sockets", 0);
+    const struct fd_handler mng = {
+            .handle_read       = mng_passive_accept,
+            .handle_write      = NULL,
+            .handle_close      = NULL, // nada que liberar
+    };
+    if(args->socks_family == AF_UNSPEC){
+        ss |= selector_register(selector, mng_socket6, &mng,OP_READ, NULL);
+        debug(etiqueta, ss, "Registered IPv6 master socket on selector", socket6);
+        ss |= selector_register(selector, mng_socket, &mng,OP_READ, NULL);
+        debug(etiqueta, ss, "Registered IPv4 master socket on selector", socket);
+    }
+    if(args->socks_family == AF_INET){
+        ss |= selector_register(selector, mng_socket, &mng,OP_READ, NULL);
+        debug(etiqueta, ss, "Registering IPv4 master socket on selector", 0);
+    }
+    if(args->socks_family == AF_INET6){
+        ss |= selector_register(selector, mng_socket6, &mng,OP_READ, NULL);
+        debug(etiqueta, ss, "Registering IPv6 master socket on selector", 0);
+    }
+    if(ss != SELECTOR_SUCCESS) {
+        err_msg = "registering mng fd";
+        goto finally;
+    }
+    debug(etiqueta, 0, "Done registering mng master sockets", 0);
+
 
     debug(etiqueta, 0, "Starting selector iteration", 0);
     for(;!done;) {

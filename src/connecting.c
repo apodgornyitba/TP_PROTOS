@@ -45,6 +45,9 @@ void connecting_init(const unsigned state, struct selector_key *key){
     exit(EXIT_FAILURE);
 }
 
+extern unsigned int metrics_historic_connections;
+extern unsigned int metrics_concurrent_connections;
+extern unsigned int metrics_max_concurrent_connections;
 unsigned connecting_write(struct selector_key *key) {
     char * etiqueta = "CONNECTING WRITE";
     debug(etiqueta, 0, "Starting stage", key->fd);
@@ -65,6 +68,12 @@ unsigned connecting_write(struct selector_key *key) {
     }
 
     if(error== 0){                                                              //// Check connection status
+
+        metrics_historic_connections += 1;
+        metrics_concurrent_connections += 1;
+        if(metrics_concurrent_connections > metrics_max_concurrent_connections)
+            metrics_concurrent_connections = metrics_max_concurrent_connections;
+
         debug(etiqueta, 0, "Connection succeed", key->fd);
         data->orig.conn.status=status_succeeded;
         data->orig.conn.origin_fd = key->fd;
@@ -78,7 +87,7 @@ unsigned connecting_write(struct selector_key *key) {
         debug(etiqueta, 0, "Connection failed. Checking other IPs", key->fd);
         data->orig.conn.status = errno_to_socks(error);
 
-        if(data->origin_resolution_current->ai_next != NULL){                   //// Check if next IP exists
+        if(data->origin_resolution_current != NULL && data->origin_resolution_current->ai_next != NULL){                 //// Check if next IP exists
 
 
             debug(etiqueta, 0, "Checking next IP", key->fd);
@@ -163,6 +172,7 @@ enum socks_reply_status errno_to_socks(int e){
     return ret;
 }
 
+extern unsigned int metrics_historic_connections_attempts;
 void connection(struct selector_key *key){
     char * etiqueta = "CONNECTION";
     debug(etiqueta, 0, "Starting stage", key->fd);
@@ -170,6 +180,9 @@ void connection(struct selector_key *key){
 
     debug(etiqueta, 0, "Connecting socket to origin", key->fd);
     int *fd= &data->origin_fd;
+
+    metrics_historic_connections_attempts += 1;
+
     int connectResult = connect(*fd, (const struct sockaddr*)&ATTACHMENT(key)->origin_addr, ATTACHMENT(key)->origin_addr_len);
 
     if(connectResult != 0 && errno != EINPROGRESS){
