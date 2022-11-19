@@ -40,6 +40,9 @@ static void sigterm_handler(const int signal) {
     done = true;
 }
 
+struct users users[MAX_USERS];
+int nusers = 0;
+
 int
 main(const int argc, const char **argv) {
 

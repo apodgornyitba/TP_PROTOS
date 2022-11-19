@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 
 #include "../include/hello.h"
+#include "../include/authentication.h"
 #include "../include/request.h"
 #include "../include/buffer.h"
 #include "../include/socks5nio.h"
@@ -44,18 +45,18 @@ static const struct state_definition client_statbl[] = {
                 .on_write_ready = hello_write
 
         },
-        /**{
+        {
                 .state = USERPASS_READ,
-                .on_arrival = userpass_read_init,
-                .on_departure = userpass_read_close,
-                .on_read_ready = userpass_read,
+                .on_arrival = auth_read_init,
+                .on_departure = auth_read_close,
+                .on_read_ready = auth_read,
         },
         {
                 .state = USERPASS_WRITE,
                 .on_arrival = userpass_write_init,
                 .on_departure = userpass_write_close,
                 .on_write_ready = userpass_write,
-        },*/
+        },
         {
                 .state = REQUEST_READ,
                 .on_arrival = request_init,

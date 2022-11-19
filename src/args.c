@@ -80,7 +80,7 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
 
     // Default values
     args->socks_addr = "127.0.0.1";
-    args->socks_addr_6 = "::";
+    args->socks_addr_6 = "::1";
     args->socks_port = 1080;
     args->socks_family = AF_UNSPEC;
     memset(&args->socks_addr_info, 0, sizeof(args->socks_addr_info));
@@ -101,7 +101,6 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
     args->debug = 0;
 
     int c;
-    int nusers = 0;
     int aux;
     long long_aux;
 
@@ -187,7 +186,7 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
                     fprintf(stderr, "maximun number of command line users reached: %d.\n", MAX_USERS);
                     return -1;
                 } else {
-                    aux = user(optarg, args->users + nusers);
+                    aux = user(optarg, users + nusers);
                     if(aux == -1)
                         return -1;
                     nusers++;

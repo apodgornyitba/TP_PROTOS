@@ -5,6 +5,7 @@
 
 #include <stdbool.h>
 #include <unistd.h>  // size_t, ssize_t
+#include <stdint.h>
 
 /*
  * buffer.c - buffer con acceso directo (útil para I/O) que mantiene

@@ -5,21 +5,10 @@
 
 #include <stdbool.h>
 #include <netinet/in.h>
+#include "socks5nio.h"
 
-#define MAX_USERS 10
-
-struct users {
-    char * name;
-    char * pass;
-};
-
-//struct doh {
-//    char           *host;
-//    char           *ip;
-//    unsigned short  port;
-//    char           *path;
-//    char           *query;
-//};
+extern struct users users[MAX_USERS];
+extern int nusers;
 
 struct socks5args {
     char * socks_addr;
@@ -42,8 +31,6 @@ struct socks5args {
 
     bool disectors_enabled;
 
-//    struct doh      doh;
-    struct users users[MAX_USERS];
 };
 
 /** Interpreta la linea de comandos (argc, argv) llenando

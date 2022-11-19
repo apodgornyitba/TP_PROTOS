@@ -50,6 +50,9 @@ enum socks_v5state {
      */
     HELLO_WRITE,
 
+    USERPASS_READ,
+    USERPASS_WRITE,
+
     REQUEST_READ,
     REQUEST_RESOLV,
     REQUEST_CONNECTING,
@@ -94,8 +97,9 @@ typedef struct socks5 {
 
     /** estados para el client_fd */
     union {
-        struct hello_st *           hello;
-        struct request_st *        request;
+        struct hello_st *         hello;
+        struct userpass_st *      userpass;
+        struct request_st *       request;
         struct copy_st *          copy;
     } client;
     /** estados para el origin_fd */
@@ -113,7 +117,20 @@ typedef struct socks5 {
     /** siguiente en el pool */
     struct socks5 *next;
 
+    /** Authentication result **/
+    uint8_t authentication;
+
 }socks5;
+
+/**
+ * Par username password
+ */
+struct users {
+    char *name;
+    char *pass;
+};
+
+#define MAX_USERS 10
 
 /** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
 #define ATTACHMENT(key) ( (struct socks5 *)(key)->data)

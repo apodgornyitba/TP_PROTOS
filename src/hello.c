@@ -121,8 +121,10 @@ static void on_hello_method(void *p, const uint8_t method) {
    char * label = "ON HELLO METHOD";
     uint8_t *selected  = p;
     debug(label, method, "Possible method from client list of methods", 0);
-    if(METHOD_NO_AUTHENTICATION_REQUIRED == method) {
-        debug(label, method, "New method selected, METHOD_NO_AUTHENTICATION_REQUIRED", 0);
+    // if(METHOD_NO_AUTHENTICATION_REQUIRED == method) {
+    //     debug(label, method, "New method selected, METHOD_NO_AUTHENTICATION_REQUIRED", 0);
+    if(0x02 == method){
+        debug(label, method, "New method selected, USERPASS", 0);
         *selected = method;
     }
 }
@@ -134,6 +136,7 @@ void hello_read_init(const unsigned state, struct selector_key *key) {
     struct hello_st *d = &ATTACHMENT(key)->client.hello;
     d->rb                              = &(ATTACHMENT(key)->read_buffer);
     d->wb                              = &(ATTACHMENT(key)->write_buffer);
+    d->method = 0xFF;
     d->parser = malloc(sizeof(*(d->parser)));
     d->parser->data = &(d->method);
     d->parser->on_authentication_method = on_hello_method;
@@ -194,8 +197,8 @@ static unsigned hello_process(const struct hello_st* d) {
     unsigned ret = HELLO_WRITE;
 
     uint8_t m = d->method;
-    const uint8_t r = (m == METHOD_NO_ACCEPTABLE_METHODS) ? 0xFF : 0x00;
-    if (-1 == hello_marshal(d->wb, r)) {
+    // const uint8_t r = (m == METHOD_NO_ACCEPTABLE_METHODS) ? 0xFF : 0x00;
+    if (-1 == hello_marshal(d->wb, m)) {
         ret  = ERROR;
     }
     if (METHOD_NO_ACCEPTABLE_METHODS == m) {
@@ -245,9 +248,8 @@ unsigned hello_write(struct selector_key *key)
         buffer_read_adv(d->wb,n);
         if(!buffer_can_read(d->wb)){
             if(SELECTOR_SUCCESS== selector_set_interest_key(key, OP_READ)){
-                ret= REQUEST_READ;
                 debug(etiqueta, 0, "Setting interest to read", key->fd);
-                ret= REQUEST_CONNECTING;
+                ret= USERPASS_READ;
             }else{
                 debug(etiqueta, 0, "Error, read buffer full", key->fd);
                 ret=ERROR;
