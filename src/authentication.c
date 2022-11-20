@@ -9,6 +9,8 @@
 
 extern struct users users[MAX_USERS];
 extern int nusers;
+extern struct users admins[MAX_USERS];
+extern int nadmins;
 
 #define VERSION_ERROR 32
 
@@ -28,48 +30,83 @@ int checkVersion(uint8_t const * ptr, uint8_t size, uint8_t *error){
  * @param key
  */
 void auth_read_init(unsigned state, struct selector_key *key){
-    char * etiqueta = "AUTH READ INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char * label = "AUTH READ INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct userpass_st *d = &ATTACHMENT(key)->client.userpass;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
 
     int total_states = 5;
+    d->status=AUTH_SUCCESS;
 
     d->parser = malloc(sizeof(*d->parser));
+    if(d->parser == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
 
     d->parser->size = total_states;
 
     d->parser->states = malloc(sizeof(parser_substate *) * total_states);
+    if(d->parser->states == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
 
     //// Read version
     d->parser->states[0] = malloc(sizeof(parser_substate));
+    if(d->parser->states[0] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[0]->state = long_read;
     d->parser->states[0]->remaining = d->parser->states[0]->size = 1;
     d->parser->states[0]->result = malloc(sizeof(uint8_t) + 1);
+    if(d->parser->states[0]->result == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[0]->check_function = checkVersion;
 
     //// Nread for username
     d->parser->states[1] = malloc(sizeof(parser_substate));
+    if(d->parser->states[1] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[1]->state = read_N;
 
     //// Read username
     d->parser->states[2] = malloc(sizeof(parser_substate));
+    if(d->parser->states[2] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[2]->state = long_read;
+    d->parser->states[2]->result = NULL;
     d->parser->states[2]->check_function = NULL;
 
     //// Nread for username
     d->parser->states[3] = malloc(sizeof(parser_substate));
+    if(d->parser->states[3] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[3]->state = read_N;
 
     //// Read password
     d->parser->states[4] = malloc(sizeof(parser_substate));
+    if(d->parser->states[4] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[4]->state = long_read;
+    d->parser->states[4]->result = NULL;
     d->parser->states[4]->check_function = NULL;
 
     parser_init(d->parser);
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 
@@ -79,42 +116,46 @@ void auth_read_init(unsigned state, struct selector_key *key){
  * @param key
  */
 unsigned auth_read(struct selector_key *key){
-    char *etiqueta = "AUTH READ";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "AUTH READ";
+    debug(label, 0, "Starting stage", key->fd);
     struct userpass_st *d = &ATTACHMENT(key)->client.userpass;
+    if(d->status==AUTH_ERROR){
+        debug(label, 0, "Error from auth_read_init", key->fd);
+        return ATTACHMENT(key)->error_state;
+    }
     unsigned ret = USERPASS_READ;
     bool error = false;
     uint8_t *ptr;
     size_t count;
     ssize_t n;
 
-    debug(etiqueta, 0, "Reading from client", key->fd);
+    debug(label, 0, "Reading from client", key->fd);
     ptr = buffer_write_ptr(d->rb, &count);
     n = recv(key->fd, ptr, count, 0);
     if (n > 0) {
 
         buffer_write_adv(d->rb, n);
-        debug(etiqueta, n, "Finished reading", key->fd);
+        debug(label, n, "Finished reading", key->fd);
 
-        debug(etiqueta, 0, "Starting userpass consume", key->fd);
+        debug(label, 0, "Starting userpass consume", key->fd);
         const enum parser_state st = consume(d->rb, d->parser, &error);
 
         if (is_done(st, 0)) {
-            debug(etiqueta, error, "Finished userpass consume", key->fd);
-            debug(etiqueta, 0, "Setting selector interest to write", key->fd);
+            debug(label, error, "Finished userpass consume", key->fd);
+            debug(label, 0, "Setting selector interest to write", key->fd);
             if (SELECTOR_SUCCESS == selector_set_interest_key(key, OP_WRITE)) {
-                debug(etiqueta, 0, "Starting authorization data processing", 0);
+                debug(label, 0, "Starting authorization data processing", 0);
                 ret = auth_process(d, key);
             } else {
-                ret = ERROR;
+                ret = ATTACHMENT(key)->error_state;
             }
         }
     } else {
-        debug(etiqueta, n, "Error, nothing to read", key->fd);
-        ret = ERROR;
+        debug(label, n, "Error, nothing to read", key->fd);
+        ret = ATTACHMENT(key)->error_state;;
     }
-    debug(etiqueta, error, "Finished stage", key->fd);
-    return error ? ERROR : ret;
+    debug(label, error, "Finished stage", key->fd);
+    return error ? ATTACHMENT(key)->error_state : ret;
 }
 
 int auth_reply(buffer *b, const uint8_t result)
@@ -138,18 +179,24 @@ int auth_reply(buffer *b, const uint8_t result)
  * @param key
  */
 void auth_read_close(unsigned state, struct selector_key *key){
-    char *etiqueta = "AUTH READ CLOSE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "AUTH READ CLOSE";
+    debug(label, 0, "Starting stage", key->fd);
     struct parser *p = ATTACHMENT(key)->client.userpass.parser;
-    for (int i = 0; i < p->size; ++i) {
-        if (p->states[i]->state == long_read) {
-            free(p->states[i]->result);
+    if(p != NULL) {
+        if (p->states != NULL) {
+            for (int i = 0; i < p->size; ++i) {
+                if (p->states[i] != NULL) {
+                    if (p->states[i]->state == long_read && p->states[i]->result != NULL) {
+                        free(p->states[i]->result);
+                    }
+                    free(p->states[i]);
+                }
+            }
+            free(p->states);
         }
-        free(p->states[i]);
+        free(p);
     }
-    free(p->states);
-    free(p);
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 
@@ -160,12 +207,12 @@ void auth_read_close(unsigned state, struct selector_key *key){
  * @param key
  */
 void auth_write_init(unsigned state, struct selector_key *key){
-    char *etiqueta = "AUTH WRITE INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "AUTH WRITE INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct userpass_st *d = &ATTACHMENT(key)->client.userpass;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 
@@ -175,8 +222,8 @@ void auth_write_init(unsigned state, struct selector_key *key){
  * @param key
  */
 unsigned auth_write(struct selector_key *key){
-    char *etiqueta = "AUTH WRITE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "AUTH WRITE";
+    debug(label, 0, "Starting stage", key->fd);
     struct userpass_st *d = &ATTACHMENT(key)->client.userpass;
     struct socks5 * data = ATTACHMENT(key);
     unsigned ret = USERPASS_WRITE;
@@ -185,30 +232,30 @@ unsigned auth_write(struct selector_key *key){
     ssize_t n;
 
 
-    debug(etiqueta, 0, "Writing to client", key->fd);
+    debug(label, 0, "Writing to client", key->fd);
     auth_reply(d->wb, ATTACHMENT(key)->authentication);
     ptr = buffer_read_ptr(d->wb, &count);
     n = send(key->fd, ptr, count, MSG_NOSIGNAL);
     if (n == -1) {
-        ret = ERROR;
+        ret = ATTACHMENT(key)->error_state;
     } else {
         buffer_read_adv(d->wb, n);
-        debug(etiqueta, 0, "Finished writing auth result to client", key->fd);
+        debug(label, 0, "Finished writing auth result to client", key->fd);
         if (!buffer_can_read(d->wb)) {
             if(data->authentication != 0x00){
-                debug(etiqueta, 0, "Access denied -> Closing connection", key->fd);
-                return DONE;
+                debug(label, 0, "Access denied -> Closing connection", key->fd);
+                return data->done_state;
             }
             if (SELECTOR_SUCCESS == selector_set_interest_key(key, OP_READ)) {
-                debug(etiqueta, 0, "Setting interest to read", key->fd);
+                debug(label, 0, "Setting interest to read", key->fd);
                 ret = REQUEST_READ;
             } else {
-                debug(etiqueta, 0, "Error on selector", key->fd);
-                ret = ERROR;
+                debug(label, 0, "Error on selector", key->fd);
+                ret = ATTACHMENT(key)->error_state;
             }
         }
     }
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
     return ret;
 }
 
@@ -220,27 +267,46 @@ unsigned auth_write(struct selector_key *key){
  * @param key
  */
 void auth_write_close(unsigned state, struct selector_key *key){
-    char * etiqueta = "AUTH WRITE CLOSE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char * label = "AUTH WRITE CLOSE";
+    debug(label, 0, "Starting stage", key->fd);
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 /**
- * Auxiliar function for auth_process
+ * Auxiliar function for socks auth_process
  * @param username
  * @param password
  * @return
  */
-uint8_t checkCredentials(uint8_t * username, uint8_t * password){
+uint8_t checkCredentials(uint8_t *username, uint8_t *password, struct selector_key * key) {
     for (int i = 0; i < nusers; ++i) {
-        if(strcmp((char *)username, users[i].name) == 0){
-            if(strcmp((char *)password, users[i].pass) == 0)
+        if (strcmp((char *) username, users[i].name) == 0) {
+            if (strcmp((char *) password, users[i].pass) == 0){
+                ATTACHMENT(key)->userIndex = i;
+                return 0x00;
+            }
+        }
+    }
+    return 0x01;
+}
+
+/**
+ * Auxiliar function for mng auth_process
+ * @param username
+ * @param password
+ * @return
+ */
+uint8_t checkMngCredentials(uint8_t *username, uint8_t *password) {
+    for (int i = 0; i < nadmins; ++i) {
+        if (strcmp((char *) username, admins[i].name) == 0) {
+            if (strcmp((char *) password, admins[i].pass) == 0)
                 return 0x00;
         }
     }
     return 0x01;
 }
+
 
 /**
  *
@@ -248,16 +314,26 @@ uint8_t checkCredentials(uint8_t * username, uint8_t * password){
  * @param data
  * @return
  */
+extern size_t metrics_historic_auth_attempts;
 int auth_process(struct userpass_st *d, struct selector_key * key){
-    char *etiqueta = "AUTH PROCESS";
-    debug(etiqueta, 0, "Starting authorization data processing", 0);
+    char *label = "AUTH PROCESS";
+    debug(label, 0, "Starting authorization data processing", 0);
     struct socks5 * data = key->data;
     uint8_t *username = d->parser->states[2]->result;
     uint8_t *password = d->parser->states[4]->result;
-    data->authentication = checkCredentials(username, password);
-    if (data->authentication == 0x00)
-        debug(etiqueta, 0, "Access granted", 0);
+
+    if(data->isSocks)
+        data->authentication = checkCredentials(username, password, key);
     else
-        debug(etiqueta, 0, "Access Denied", 0);
+        data->authentication = checkMngCredentials(username, password);
+
+    metrics_historic_auth_attempts += 1;
+    if (data->authentication == 0x00) {
+        debug(label, 0, "Access granted", 0);
+    }
+    else {
+        debug(label, 0, "Access Denied", 0);
+    }    
+
     return USERPASS_WRITE;
 }

@@ -1,68 +1,129 @@
-/* Codigo provisto por la cátedra */
-
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <strings.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
 #include <sys/socket.h>
-#include <netinet/in.h>
+#include <unistd.h>
+#include <ctype.h>
 #include <arpa/inet.h>
-#include "../include/logger.h"
-#include "../include/tcpClientUtil.h"
+#include <errno.h>
+#include "../include/client_args.h"
+#include "../include/debug.h"
+#include "../include/client_utils.h"
 
-#define BUFSIZE 512
-
-char buffer[1024] = {0};
-int idx = 0;
-
-int main(int argc, char *argv[]) {
-
-    if (argc != 3) {
-        log(FATAL, "usage: %s <Server Name/Address> <Server Port/Name>", argv[0]);
+FILE * append_file;
+int main(const int argc, const char **argv)
+{
+    struct management_args * args = malloc(sizeof(struct management_args));
+    if(args == NULL) {
+        exit(EXIT_FAILURE);
+    }
+    memset(args, 0, sizeof(*args));
+    args->user= malloc(sizeof(struct user));
+    if(args->user == NULL) {
+        exit(EXIT_FAILURE);
     }
 
-    char *server = argv[1];     // First arg: server name IP address
-    char * port = argv[2];       // Second arg server port
+    int parse_args_result = parse_args(argc, (char *const *)argv, args);
 
-    // Create a reliable, stream socket using TCP
-    int sock = tcpClientSocket(server, port);
-    if (sock < 0) {
-        log(FATAL, "socket() failed")
+    if(parse_args_result == -1){
+        free(args);
+        exit(1);
     }
 
-    while(1) {
-        char c;
-        while ((c = getchar()) != '\n') {
-            if (c == EOF)
-                break;
-            buffer[idx++] = c;
+    if(args->append){
+        append_file = fopen(args->file_path, "a");
+        if(append_file == NULL){
+            printf("Error opening %s\n", args->file_path);
+            return -1;
         }
-        if (c == EOF) {
-            send(sock, "", 0, 0);
+    } else append_file = NULL;
+
+    int debug_option = args->debug;
+    debug_init(debug_option);
+
+    int sockfd;
+
+    switch (args->mng_family) {
+        case AF_UNSPEC:{
+            sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
+            if (sockfd < 0) {
+                debug("M16 CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
+            }
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
+                debug("M16 CLIENT FATAL", 0, "ipv4 connect() failed",0);
+                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                goto end;
+            }
             break;
         }
-        buffer[(idx)++] = '\n';
-        buffer[(idx)++] = 0;
-        idx = 0;
-        send(sock, buffer, strlen(buffer), 0);
-        printf("Sent: %s", buffer);
-        buffer[0] = 0;
-
-        /* Receive up to the buffer size (minus 1 to leave space for a null terminator) bytes from the sender */
-        size_t numBytes = recv(sock, buffer, BUFSIZE - 1, 0);
-        if (numBytes < 0) {
-            log(ERROR, "recv() failed")
-        } else if (numBytes == 0)
-            log(ERROR, "recv() connection closed prematurely")
-        else {
-            //totalBytesRcvd += numBytes; // Keep tally of total bytes
-            buffer[numBytes] = '\0';    // Terminate the string!
-            printf("Received: %s", buffer);      // Print the echo buffer
+        case AF_INET:{
+            sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
+            if (sockfd < 0) {
+                debug("M16 CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
+            }
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
+                debug("M16 CLIENT FATAL", 0, "ipv4 connect() failed",0);
+                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                goto end;
+            }
+            break;
         }
-        
+        case AF_INET6:{
+            sockfd= socket(AF_INET6, SOCK_STREAM,IPPROTO_TCP);
+            if (sockfd < 0) {
+                debug("M16 CLIENT FATAL", sockfd, "ipv6 socket() failed",0);
+            }
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info_6, sizeof(struct sockaddr_in6)) < 0) {
+                debug("M16 CLIENT FATAL", 0, "ipv6 connect() failed",0);
+                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                goto end;
+            }
+            break;
+        }    
+
+    int ret=handshake(sockfd, args->user);
+    if(ret < 0){
+        printf("Error in sending handshake\n");
+        goto end;
     }
 
-    close(sock);
+
+    uint8_t response=handshake_response(sockfd);
+    if(response==0xFF) {
+        printf("Error in handshake response\n");
+        goto end;
+    }
+
+    if(response==0x02) {
+            if(send_credentials(sockfd, args->user)< 0) {
+            printf("Error sending credentials\n");
+            goto end;
+        }
+    }
+
+    response=credentials_response(sockfd);
+    if(response!=0x00) {
+        printf("Error on user authentication.\n");
+        goto end;
+    }
+
+    int req_index;
+    ret= send_request(sockfd, &req_index);
+    if(ret < 0){
+        printf("Send request error\n");
+        goto end;
+    }
+
+    if(request_response(sockfd, req_index) <0)
+        goto end;
+
+    end:
+    close(sockfd);
+    free(args->user);
+    free(args);
+
     return 0;
+}
 }

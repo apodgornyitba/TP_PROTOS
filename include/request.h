@@ -2,14 +2,12 @@
 #define REQUEST_H
 
 #include "buffer.h"
-#include "resolv.h"
 #include "selector.h"
 #include "states.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include "request_parser.h"
 #include "socks5nio.h"
-
 
 #define MAX_FQDN_SIZE 0xFF
 
@@ -111,22 +109,17 @@ unsigned request_process(struct selector_key *key, struct request_st *d);
 enum request_state request_parser_feed(request_parser *p, uint8_t b);
 
 /** consume los bytes del mensaje del cliente y se los entrega al parser
- * hasta que se termine de parsear
-**/
+ * hasta que se termine de parsear **/
 enum request_state request_consume(buffer *b, request_parser *p, bool *error);
 
-/**
- * @param key
- * @param d
- * @return
- */
 bool request_is_done(const enum request_state state, bool *error);
 
 /** ensambla la respuesta del request dentro del buffer con el metodo
- * seleccionado.
-**/
+ * seleccionado. **/
 int request_marshall(int status, buffer * b);
 
-//enum socks_reply_status errno_to_socks(int e);
+enum socks_v5state error_handler(enum socks_reply_status status, struct selector_key *key );
+
+enum socks_v5state error_handler_to_client(enum socks_reply_status status, struct selector_key *key );
 
 #endif

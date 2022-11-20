@@ -8,6 +8,16 @@
 
 // Definición de variables para cada estado
 
+enum hello_status{
+    HELLO_ERROR,
+    HELLO_SUCCESS
+};
+
+enum auth_status{
+    AUTH_ERROR,
+    AUTH_SUCCESS
+};
+
 /** Used by the HELLO_READ and HELLO_WRITE states */
 typedef struct hello_st
 {
@@ -17,6 +27,7 @@ typedef struct hello_st
     struct hello_parser *parser;
     /** Selected auth method */
     uint8_t method;
+    enum hello_status status;
 }hello_st;
 
 /** Used by the USERPASS_READ and USERPASS_WRITE states */
@@ -26,11 +37,7 @@ typedef struct userpass_st
     buffer *rb, *wb;
     /** Pointer to hello parser */
     struct parser * parser;
-    /** Selected user */
-    //uint8_t * user;
-    /** Selected password */
-    //uint8_t * password;
-    uint8_t auth_result;
+    enum auth_status status;
 }userpass_st;
 
 /** Used by the REQUEST_READ, REQUEST_WRITE and REQUEST_RESOLV state */
@@ -54,6 +61,8 @@ typedef struct request_st
 
     //struct request request;
     struct request_parser * parser;
+
+    int addr_family;
 
     enum socks_reply_status status;
 
@@ -87,5 +96,46 @@ typedef struct copy_st
     /** Pointer to the structure of the opposing copy state*/
     struct copy_st * other_copy;
 }copy_st;
+
+enum mng_reply_status
+{
+    mng_status_succeeded = 0x00,
+    mng_status_server_error = 0x01,
+    mng_status_index_not_supported = 0x02,
+    mng_status_max_users_reached = 0x03
+};
+
+enum mng_request_indexes
+{
+    mng_request_index_supported_indexes = 0x00,
+    mng_request_index_list_users = 0x01,
+    mng_request_index_historic_connections = 0x02,
+    mng_request_index_concurrent_connections = 0x03,
+    mng_request_index_max_concurrent_connections = 0x04,
+    mng_request_index_historic_bytes_transferred = 0x05,
+    mng_request_index_historic_auth_attempts = 0x06,
+    mng_request_index_historic_connections_attempts = 0x07,
+    mng_request_index_average_bytes_per_read = 0x08,
+    mng_request_index_average_bytes_per_write = 0x09,
+    mng_request_index_add_user = 0x0A,
+    mng_request_index_delete_user = 0x0B,
+    mng_request_index_disable_auth = 0x0C,
+    mng_request_index_disable_password_disectors = 0x0D,
+};
+
+typedef struct mng_request_st
+{
+    buffer *rb, *wb;
+
+    struct parser * parser;
+
+    enum mng_reply_status status;
+
+    enum mng_request_indexes index;
+
+    const int *client_fd;
+
+}mng_request_st;
+
 
 #endif

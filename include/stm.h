@@ -5,8 +5,7 @@
 
 #include "selector.h"
 
-/**
- * stm.c - pequeño motor de maquina de estados donde los eventos son los
+/* stm.c - pequeño motor de maquina de estados donde los eventos son los
  *         del selector.c
  *
  * La interfaz es muy simple, y no es un ADT.
@@ -35,6 +34,8 @@ struct state_machine {
     /* estado actual */
     const struct state_definition * current;
 };
+
+//struct selector_key *key;
 
 /* definición de un estado de la máquina de estados */
 struct state_definition {

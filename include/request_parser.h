@@ -7,9 +7,7 @@
 #define IPV4_LEN 4
 #define IPV6_LEN 16
 
-/**
- * Posibles estados del request parser
- */
+/* Posibles estados del request parser */
 enum request_state {
     request_version,
     request_cmd,
@@ -29,40 +27,27 @@ enum request_state {
     request_error_unsupported_version,
 };
 
-/**
- * Estructura con información del request parser
- */
+/* Estructura con información del request parser */
 typedef struct request_parser {
     struct request *request;
 
     enum request_state state;
 
-    //// Bytes a leer del campo actual
+    // Bytes a leer del campo actual
     uint8_t remaining;
 
-    //// Bytes leidos
+    // Bytes leidos
     uint8_t read;
 
 } request_parser;
 
-/**
- * Inicializa los campos del parser
- * @param parser
- */
-void request_parser_init(struct request_parser *parser);
+/* Inicializa los campos del parser */
+int request_parser_init(struct request_parser *parser);
 
-/**
- * Libera los recursos del parser que no se van a utilizar más
- * @param parser
- */
+/* Libera los recursos del parser que no se van a utilizar más */
 void request_parser_close(struct request_parser *parser);
 
-/**
- * Función principal de procesamiento de entrada del parser
- * @param parser
- * @param byte
- * @return estado que sigue
- */
+/* Función principal de procesamiento de entrada del parser */
 enum request_state request_parser_feed(struct request_parser *parser, uint8_t byte);
 
 #endif

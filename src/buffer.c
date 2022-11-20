@@ -1,7 +1,5 @@
-/**
- * buffer.c - buffer con acceso directo (útil para I/O) que mantiene
- *            mantiene puntero de lectura y de escritura.
- */
+/* buffer.c - buffer con acceso directo (útil para I/O) que mantiene
+ * puntero de lectura y de escritura. */
 /* Codigo provisto por la cátedra */
 
 #include <string.h>
@@ -9,7 +7,6 @@
 #include <assert.h>
 
 #include "../include/buffer.h"
-#include "../include/socks5nio.h"
 
 inline void buffer_reset(buffer *b) {
     b->read  = b->data;

@@ -1,4 +1,5 @@
 /* Codigo provisto por la cátedra */
+/* MODIFICADO */
 
 #include <stdio.h>     /* for printf */
 #include <stdlib.h>    /* for exit */
@@ -6,7 +7,6 @@
 #include <string.h>    /* memset */
 #include <errno.h>
 #include <getopt.h>
-
 #include "../include/debug.h"
 #include "../include/address_utils.h"
 #include "../include/args.h"
@@ -46,8 +46,12 @@ static int user(char *s, struct users *user) {
     } else {
         *p = 0;
         p++;
-        user->name = s;
-        user->pass = p;
+        char * newUsername = malloc(strlen(s) + 1);
+        char * newPassword = malloc(strlen(p) + 1);
+        strcpy(newUsername, (char *)s);
+        strcpy(newPassword, (char *)p);
+        user->name = newUsername;
+        user->pass = newPassword;
     }
     return 0;
 }
@@ -60,12 +64,12 @@ static int usage(const char *progname) {
     fprintf(stderr,
             "Usage: %s [OPTION]...\n"
             "\n"
-            "   -h Imprime la ayuda y termina.\n"
+            "   -h               Imprime la ayuda y termina.\n"
             "   -l <SOCKS addr>  Dirección donde servirÃ¡ el proxy SOCKS.\n"
-            "   -d Activa el debugging por STDOUT.\n"
-            "   -D Activa el debugging por el archivo debugging.txt.\n"
+            "   -d               Activa el debugging por STDOUT.\n"
+            "   -D               Activa el debugging por el archivo debugging.txt.\n"
             "   -b <buffer size> Setea el tamaño del buffer del proxy SOCKS\n"
-            "   -N Deshabilita los passwords disectors.\n"
+            "   -N               Deshabilita los passwords disectors.\n"
             "   -L <conf  addr>  Dirección donde servirÃ¡ el servicio de management.\n"
             "   -p <SOCKS port>  Puerto entrante conexiones SOCKS.\n"
             "   -P <conf port>   Puerto entrante conexiones configuracion\n"
@@ -79,8 +83,8 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
     memset(args, 0, sizeof(*args)); // sobre todo para setear en null los punteros de users
 
     // Default values
-    args->socks_addr = "127.0.0.1";
-    args->socks_addr_6 = "::1";
+    args->socks_addr = "0.0.0.0";
+    args->socks_addr_6 = "::";
     args->socks_port = 1080;
     args->socks_family = AF_UNSPEC;
     memset(&args->socks_addr_info, 0, sizeof(args->socks_addr_info));
@@ -88,34 +92,25 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
 
     args->buffer_size = DEFAULT_BUFFER_SIZE;
     args->mng_buffer_size = DEFAULT_BUFFER_SIZE;
-
+    
     args->mng_addr = "127.0.0.1";
-    args->mng_addr_6 = "::";
-    args->mng_port = 8888;
+    args->mng_addr_6 = "::1";
+    args->mng_port = 8080;
     args->mng_family = AF_UNSPEC;
     memset(&args->mng_addr_info, 0, sizeof(args->mng_addr_info));
     memset(&args->mng_addr_info_6, 0, sizeof(args->mng_addr_info_6));
 
-    args->disectors_enabled = true;
+    args->disectors_enabled = 0x00;
 
     args->debug = 0;
 
     int c;
     int aux;
-    long long_aux;
 
     while (true) {
-        int option_index = 0;
-//        static struct option long_options[] = {
-//            { "doh-ip",    required_argument, 0, 0xD001 },
-//            { "doh-port",  required_argument, 0, 0xD002 },
-//            { "doh-host",  required_argument, 0, 0xD003 },
-//            { "doh-path",  required_argument, 0, 0xD004 },
-//            { "doh-query", required_argument, 0, 0xD005 },
-//            { 0,           0,                 0, 0 }
-//        };        
+        int option_index = 0;     
 
-        c = getopt_long(argc, argv, "dDbhl:L:Np:P:u:v", NULL, &option_index);
+        c = getopt_long(argc, argv, "dDhl:L:Np:P:f:u:v", NULL, &option_index);
         if (c == -1)
             break;
 
@@ -127,15 +122,8 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
             case 'D':
                 args->debug = FILE_DEBUG;
                 break;
-            case 'b':
-                long_aux = buffer_size(optarg);
-                if(aux == -1)
-                    return -1;
-                args->buffer_size = (unsigned short)long_aux;
-                break;
             case 'h':
-                usage(argv[0]);
-                break;
+                return usage(argv[0]);
             case 'l':
                 args->socks_family = address_processing(optarg, &args->socks_addr_info, &args->socks_addr_info_6, args->socks_port);
                 if(args->socks_family == -1){
@@ -163,7 +151,7 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
                 }
                 break;
             case 'N':
-                args->disectors_enabled = false;
+                args->disectors_enabled = 0x01;
                 break;
             case 'p':
                 aux = port(optarg);
@@ -181,6 +169,9 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
                 args->mng_addr_info.sin_port = htons(aux);
                 args->mng_addr_info_6.sin6_port = htons(aux);
                 break;
+            case 'f':
+                args->credentials = optarg;
+                break;
             case 'u':
                 if(nusers >= MAX_USERS) {
                     fprintf(stderr, "maximun number of command line users reached: %d.\n", MAX_USERS);
@@ -195,27 +186,11 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
             case 'v':
                 version();
                 return -1;
-                break;
-//          case 0xD001:
-//                args->doh.ip = optarg;
-//                break;
-//            case 0xD002:
-//                args->doh.port = port(optarg);
-//                break;
-//            case 0xD003:
-//                args->doh.host = optarg;
-//                break;
-//            case 0xD004:
-//                args->doh.path = optarg;
-//                break;
-//            case 0xD005:
-//                args->doh.query = optarg;
-//                break;                
+                break;            
             default:
                 fprintf(stderr, "unknown argument %d.\n", c);
                 return -1;
         }
-
     }
     if (optind < argc) {
         fprintf(stderr, "argument not accepted: ");
@@ -251,4 +226,3 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
     }
     return 0;
 }
-

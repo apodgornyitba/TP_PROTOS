@@ -34,6 +34,7 @@ int address_processing(char * address, struct sockaddr_in * addr, struct sockadd
    freeaddrinfo(res);
    return 0;
     
+    //FIXME: VIEW COMMENTS IF DOES NOT WORK
     // // IPv4
     // int result = inet_pton(AF_INET, address, &addr->sin_addr);
 

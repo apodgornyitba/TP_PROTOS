@@ -1,21 +1,18 @@
-/**
- * socks5nio.c  - controla el flujo de un proxy SOCKSv5 (sockets no bloqueantes)
- */
+/* socks5nio.c  - controla el flujo de un proxy SOCKSv5 (sockets no bloqueantes) */
+/* Codigo provisto por la cátedra */
+/* MODIFICADO */
+
 #include <netdb.h>
 #include <stdlib.h>  // malloc
 #include <string.h>  // memset
 #include <unistd.h>  // close
 #include <arpa/inet.h>
-
 #include "../include/hello.h"
 #include "../include/authentication.h"
 #include "../include/buffer.h"
-#include "../include/socks5nio.h"
-#include "../include/stm.h"
-#include "../include/debug.h"
 #include "../include/connecting.h"
-#include "copy.h"
-#include "resolv.h"
+#include "../include/copy.h"
+#include "../include/resolv.h"
 
 #define N(x) (sizeof(x)/sizeof((x)[0]))
 
@@ -26,7 +23,7 @@ const struct fd_handler socks5_handler = {
         .handle_block  = socksv5_block,
 };
 
-/** definición de handlers para cada estado */
+/* definición de handlers para cada estado */
 static const struct state_definition client_statbl[] = {
         {
                 .state = HELLO_READ,
@@ -60,10 +57,6 @@ static const struct state_definition client_statbl[] = {
         },
         {
                 .state = REQUEST_RESOLV,
-//                .on_arrival = resolve_init,
-//                .on_departure = resolve_close,
-//                .on_read_ready = resolve_read,
-//                .on_write_ready = resolve_write,
                 .on_block_ready= request_resolv_done,
         },
         {
@@ -97,12 +90,9 @@ static const struct state_definition client_statbl[] = {
 };
 
 
-/**
- * Pool de struct socks5, para ser reusados.
- *
+/* Pool de struct socks5, para ser reusados.
  * Como tenemos un unico hilo que emite eventos no necesitamos barreras de
- * contención.
- */
+ * contención. */
 
 static const unsigned max_pool=50;
 static unsigned  pool_size=0;
@@ -112,7 +102,7 @@ static struct socks5 *pool=0;
 
 /** crea un nuevo struct socks */
 static struct socks5* socks5_new(int client_fd){
-    char * etiqueta = "SOCKS5 NEW";
+    char * label = "SOCKS5 NEW";
     struct socks5 *ret;
 
     if(pool == NULL){
@@ -129,35 +119,41 @@ static struct socks5* socks5_new(int client_fd){
 
     memset(ret, 0x00, sizeof(*ret));
 
+    ret->isSocks = true;
+
     ret->origin_fd =-1;
     ret->client_fd= client_fd;
     ret->client_addr_len= sizeof(ret->client_addr);
 
-    //// INITIAL STATE
-    debug(etiqueta, HELLO_READ, "Setting first state", client_fd);
+    // INITIAL STATE
+    debug(label, HELLO_READ, "Setting first state", client_fd);
     ret->stm.initial =HELLO_READ;
     ret->stm.max_state= ERROR;
     ret->stm.current= &client_statbl[0];
     ret->stm.states= client_statbl;
     stm_init(&ret->stm);
 
-    debug(etiqueta, 0, "Init buffers", client_fd);
+    ret->done_state = DONE;
+    ret->error_state = ERROR;
+
+    password_parser_init(&ret->password_parser);
+    ret->password_parser.userIndex = &ret->userIndex;
+    ret->password_parser.client = &ret->client_addr;
+    ret->password_parser.origin = &ret->origin_addr;
+
+    debug(label, 0, "Init buffers", client_fd);
     buffer_init(&ret->read_buffer, N(ret->raw_buff_a), ret->raw_buff_a);
     buffer_init(&ret->write_buffer, N(ret->raw_buff_b), ret->raw_buff_b);
 
     ret->references= 1;
     return ret;
     finally:
-        debug(etiqueta, 0, "Error creating socks5 struct", client_fd);
+        debug(label, 0, "Error creating socks5 struct", client_fd);
         return ret;
 }
 
 /** realmente destruye */
 static void socks5_destroy_(struct socks5* s) {
-    if(s->origin_resolution != NULL) {
-        freeaddrinfo(s->origin_resolution);
-        s->origin_resolution = 0;
-    }
     free(s);
 }
 
@@ -191,21 +187,21 @@ void socksv5_pool_destroy(void) {
 
 /** Intenta aceptar la nueva conexión entrante*/
 void socksv5_passive_accept(struct selector_key *key) {
-    char * etiqueta = "SOCKSV5 PASSIVE ACCEPT";
+    char * label = "SOCKSV5 PASSIVE ACCEPT";
     struct sockaddr_storage       client_addr;
     socklen_t                     client_addr_len = sizeof(client_addr);
     struct socks5                *state           = NULL;
 
-    debug(etiqueta, 0, "Starting pasive accept", key->fd);
+    debug(label, 0, "Starting pasive accept", key->fd);
     const int client = accept(key->fd, (struct sockaddr*) &client_addr, &client_addr_len);
-    debug(etiqueta, client, "Accept connection", key->fd);
+    debug(label, client, "Accept connection", key->fd);
     if(client == -1) {
         goto fail;
     }
     if(selector_fd_set_nio(client) == -1) {
         goto fail;
     }
-    debug(etiqueta, 0, "Creating socks5 struct", key->fd);
+    debug(label, 0, "Creating socks5 struct", key->fd);
     state = socks5_new(client);
     if(state == NULL) {
         // sin un estado, nos es imposible manejaro.
@@ -215,15 +211,15 @@ void socksv5_passive_accept(struct selector_key *key) {
     }
     memcpy(&state->client_addr, &client_addr, client_addr_len);
     state->client_addr_len = client_addr_len;
-    debug(etiqueta, 0, "Registering client with read interest to selector", key->fd);
+    debug(label, 0, "Registering client with read interest to selector", key->fd);
     selector_status ss = selector_register(key->s, client, &socks5_handler, OP_READ, state);
     if(SELECTOR_SUCCESS != ss) {
-        debug(etiqueta, ss, "Error registering", key->fd);
+        debug(label, ss, "Error registering", key->fd);
         goto fail;
     }
     return ;
     fail:
-    debug(etiqueta, 0, "Fail", key->fd);
+    debug(label, 0, "Fail", key->fd);
     if(client != -1) {
         close(client);
     }

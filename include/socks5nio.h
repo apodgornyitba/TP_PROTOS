@@ -5,6 +5,11 @@
 #include <sys/socket.h>
 #include "states.h"
 #include "stm.h"
+#include "password_parser.h"
+
+#define MAX_USERS 255
+/** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
+#define ATTACHMENT(key) ( (struct socks5 *)(key)->data)
 
 /* handler del socket pasivo que atiende conexiones socksv5 */
 void socksv5_passive_accept(struct selector_key * key);
@@ -91,11 +96,17 @@ typedef struct socks5 {
     /** maquinas de estados */
     struct state_machine          stm;
 
+    unsigned int error_state;
+    unsigned int done_state;
+
+    bool isSocks;
+
     /** estados para el client_fd */
     union {
         struct hello_st         hello;
-        struct userpass_st        userpass;
+        struct userpass_st      userpass;
         struct request_st       request;
+        struct mng_request_st   mng_request;
         struct copy_st          copy;
     } client;
     /** estados para el origin_fd */
@@ -116,20 +127,18 @@ typedef struct socks5 {
     /** Authentication result **/
     uint8_t authentication;
 
+    int userIndex;
+
+    struct password_parser password_parser;
+
 }socks5;
 
-/**
- * Par username password
- */
+static void socks5_destroy(struct socks5 *s);
+
+/* Par username password */
 struct users {
     char *name;
     char *pass;
 };
-
-#define MAX_USERS 10
-
-/** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
-#define ATTACHMENT(key) ( (struct socks5 *)(key)->data)
-
 
 #endif

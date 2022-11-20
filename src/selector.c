@@ -1,6 +1,4 @@
-/**
- * selector.c - un muliplexor de entrada salida
- */
+/* selector.c - un muliplexor de entrada salida */
  /* Codigo provisto por la cátedra */
 
 #include <stdio.h>  // perror
@@ -8,8 +6,6 @@
 #include <string.h> // memset
 #include <assert.h> // :)
 #include <errno.h>  // :)
-#include <pthread.h>
-
 #include <stdint.h> // SIZE_MAX
 #include <unistd.h>
 #include <fcntl.h>
@@ -306,9 +302,9 @@ void selector_destroy(fd_selector s) {
                 free(aux);
             }
             free(s->fds);
-            s->fds     = NULL;
+            s->fds = NULL;
             s->fd_size = 0;
-        }
+            }
         free(s);
     }
 }

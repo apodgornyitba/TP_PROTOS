@@ -7,10 +7,8 @@
 #include <unistd.h>  // size_t, ssize_t
 #include <stdint.h>
 
-/*
- * buffer.c - buffer con acceso directo (útil para I/O) que mantiene
- *            mantiene puntero de lectura y de escritura.
- *
+/* buffer.c - buffer con acceso directo (útil para I/O) que mantiene
+ * puntero de lectura y de escritura.
  *
  * Para esto se mantienen dos punteros, uno de lectura
  * y otro de escritura, y se provee funciones para
