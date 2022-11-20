@@ -113,12 +113,12 @@ unsigned connecting_write(struct selector_key *key){
         if(metrics_concurrent_connections > metrics_max_concurrent_connections)
             metrics_max_concurrent_connections = metrics_concurrent_connections;
         
-        debug(label, 0, "Connection succeed", key->fd);
-        printf("%s\t%s\tRegister A\t to: %s \t from: %s\t status: %d\n", buf, users[ATTACHMENT(key)->userIndex].name, sockaddr_to_human(orig, MAX_IP_LENGTH, origAddr), sockaddr_to_human(client, MAX_IP_LENGTH, clientAddr), data->orig.conn.status);
         time_t now;
         time(&now);
         char buf[sizeof "2011-10-08T07:07:09Z"];
         strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
+        debug(label, 0, "Connection succeed", key->fd);
+        printf("%s\t%s\tRegister A\t to: %s \t from: %s\t status: %d\n", buf, users[ATTACHMENT(key)->userIndex].name, sockaddr_to_human(orig, MAX_IP_LENGTH, origAddr), sockaddr_to_human(client, MAX_IP_LENGTH, clientAddr), data->orig.conn.status);
         if(data->client.request.addr_family == socks_req_addrtype_domain)
             freeaddrinfo(data->origin_resolution);
         data->orig.conn.status=status_succeeded;
@@ -139,7 +139,7 @@ unsigned connecting_write(struct selector_key *key){
         debug(label, 0, "Connection failed. Checking other IPs", key->fd);
         data->orig.conn.status = errno_to_socks(error);
 
-        if(data->origin_resolution_current->ai_next != NULL){
+        if(data->origin_resolution_current != NULL && data->origin_resolution_current->ai_next != NULL){
 
             debug(label, 0, "Checking next IP", key->fd);
             struct addrinfo * current = data->origin_resolution_current = data->origin_resolution_current->ai_next;
@@ -187,13 +187,9 @@ void connecting_close(const unsigned state, struct selector_key *key){
     char * label = "CONNECTING CLOSE";
     debug(label, 0, "Starting stage", key->fd);
     struct request_st *d = &ATTACHMENT(key)->client.request;
-    request_parser_close(d->parser);
     if(d->parser != NULL) {
         request_parser_close(d->parser);
         free(d->parser);
-    }
-     if(ATTACHMENT(key)->origin_resolution != NULL) {
-        freeaddrinfo(ATTACHMENT(key)->origin_resolution);
     }
     debug(label, 0, "Finished stage", key->fd);
 }

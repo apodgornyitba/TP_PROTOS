@@ -1,4 +1,4 @@
-#include "..//include/password_parser.h"
+#include "../include/password_parser.h"
 #include <stdlib.h>
 #include <printf.h>
 #include "../include/socks5nio.h"
@@ -181,7 +181,7 @@ enum password_parser_state pass_word_search_handler(struct password_parser *p, u
             p->current_index++;
         return user_word_search;
     }
-}
+} 
 
 enum password_parser_state user_word_search_handler(struct password_parser *p, uint8_t b) {
     if (user_reserved_pop3_word[p->current_index++] == b) {   //// OK
