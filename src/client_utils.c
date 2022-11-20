@@ -45,7 +45,7 @@ uint8_t handshake_response(int sockfd){
 
 
 int send_credentials(int sockfd, struct user* user){
-    uint8_t buffer[100];
+    uint8_t buffer[510];
     uint i = 0;
     buffer[i++]=0x01;//subnegotiation version
 
@@ -71,18 +71,16 @@ uint8_t credentials_response(int sockfd){
 
 
 int add_user(uint8_t* buffer){
-    uint8_t username[20];
-    uint8_t password[20];
+    uint8_t username[255];
+    uint8_t password[255];
 
 
-    printf("Enter new username: ");
+    printf("Enter username to delete: ");
     scanf("%s",username);
     int nusername= strlen((char*)username);
-    //printf("length username: %d\n", nusername);
     printf("Enter new password: ");
     scanf("%s", password);
     int npassword= strlen((char*)password);
-    //printf("length password: %d\n", npassword);
     buffer[1]=nusername;
     strcpy((char*)buffer+2,(char*) username);
     buffer[nusername+2]=npassword;
@@ -92,13 +90,11 @@ int add_user(uint8_t* buffer){
 }
 
 int delete_user(uint8_t* buffer){
-    uint8_t username[20];
+    uint8_t username[255];
 
     printf("Enter new username: ");
     scanf("%s",username );
     int nusername= strlen((char*)username);
-    printf("length username: %d\n", nusername);
-    printf("%s", username);
 
     buffer[1]=nusername;
     strcpy((char*)buffer+2,(char*) username);
@@ -107,7 +103,7 @@ int delete_user(uint8_t* buffer){
 }
 
 int disable_enable(uint8_t* buffer, char* print_string){
-    uint8_t on_off[10];
+    uint8_t on_off[50];
 
     printf("%s", print_string);
     scanf("%s",(char*)on_off );
@@ -122,13 +118,15 @@ int disable_enable(uint8_t* buffer, char* print_string){
         buffer[1]=0x00;
     }else if(strcmp((char*)on_off, "off")==0){
         buffer[1]=0x01;
-    }else
-        buffer[1]=0xFF;
+    }else {
+        printf("Invalid option\n");
+        return -1;
+    }
     return 2;
 }
 
 int send_request(int sockfd, int * index){
-    uint8_t buffer[250];
+    uint8_t buffer[512];
 
     int bytes_to_send=1;
 
@@ -184,13 +182,12 @@ int send_request(int sockfd, int * index){
             buffer[0]=0x0D;
             bytes_to_send= disable_enable(buffer, "Turn on/off password dissectors: ");
             break;
-        case 255:
+        default:
             buffer[0]=0xFF;
             break;
-        default:
-            return -1;
     }
-
+    if(bytes_to_send < 0)
+        return -1;
     return send(sockfd, buffer, bytes_to_send,0);
 }
 
@@ -221,11 +218,13 @@ void list_users(char* buffer){
 }
 
 uint32_t cast_uint32(char* buffer){
-    return buffer[1]|(buffer[2]<<8)|
-           (buffer[3]<<16)|(buffer[4]<<24);
+    uint8_t v4[4] = {buffer[1],buffer[2],buffer[3],buffer[4]};
+    uint32_t *allOfIt;
+    allOfIt = (uint32_t*)v4;
+    return *allOfIt;
 }
 
-
+extern FILE * append_file;
 int request_response(int sockfd, int req_index){
     uint8_t buffer[500];
     recv(sockfd, buffer, 500, 0);
@@ -305,6 +304,8 @@ int request_response(int sockfd, int req_index){
             return -1;
 
     }
+    if (append_file != NULL)
+        fprintf(append_file, "%u ", stats);
 
     return 0;
 

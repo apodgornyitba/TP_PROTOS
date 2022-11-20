@@ -11,11 +11,11 @@ void debug_init(int setting){
     }
 }
 
-void debug(char * etiqueta, int codigo,char * mensaje, int extra){
+void debug(char * label, int codigo,char * mensaje, int extra){
     if(d == STDOUT_DEBUG)
-        printf("DEBUG, %s: Código: %d. Mensaje: %s, %d\n", etiqueta, codigo, mensaje, extra);
+        printf("DEBUG, %s: Código: %d. Mensaje: %s, %d\n", label, codigo, mensaje, extra);
     if(d == FILE_DEBUG) {
-        fprintf(debugging_file, "DEBUG, %s: Código: %d. Mensaje: %s, %d\n", etiqueta, codigo, mensaje, extra);
+        fprintf(debugging_file, "DEBUG, %s: Código: %d. Mensaje: %s, %d\n", label, codigo, mensaje, extra);
     }
 }
 

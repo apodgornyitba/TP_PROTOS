@@ -5,6 +5,7 @@
 #include "../include/debug.h"
 #include <sys/socket.h>
 #include <netutils.h>
+#include <time.h>
 
 #define BUFFER_SIZE 5
 extern struct users users[MAX_USERS];
@@ -81,7 +82,7 @@ enum password_parser_state user_read_reset(struct password_parser *p, uint8_t b)
 }
 
 enum password_parser_state user_read_handler(struct password_parser *p, uint8_t b) {
-    char *etiqueta = "DISSEC USER READ";
+    char *label = "DISSEC USER READ";
     if (p->current_index >= 255)
         return user_read_reset(p, b);
 
@@ -96,7 +97,7 @@ enum password_parser_state user_read_handler(struct password_parser *p, uint8_t 
     if (b == 0x0A) {
         p->username = checkSize(p->username, p->current_index);
         p->username[p->current_index] = 0;
-        debug(etiqueta, (int) p->current_index, (char *) p->username, 0);
+        debug(label, (int) p->current_index, (char *) p->username, 0);
         p->current_index = 0;
         p->last = false;
         return pass_word_search;
@@ -123,7 +124,7 @@ enum password_parser_state pass_read_reset(struct password_parser *p, uint8_t b)
 }
 
 enum password_parser_state pass_read_handler(struct password_parser *p, uint8_t b) {
-    char *etiqueta = "DISSEC PASS READ";
+    char *label = "DISSEC PASS READ";
     if (p->current_index >= 255)
         return pass_read_reset(p, b);
     if (p->last && b != 0x0A) {
@@ -139,14 +140,19 @@ enum password_parser_state pass_read_handler(struct password_parser *p, uint8_t 
         p->password[p->current_index] = 0;
         char *orig = malloc(100);
         char *client = malloc(100);
-        printf("Username: %s Password: %s\t Active user: %s Client address: %s Origin address: %s\n",
-               p->username, p->password,
+        time_t now;
+        time(&now);
+        char buf[sizeof "2011-10-08T07:07:09Z"];
+        strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
+        printf("%s\tActive user: %s\tRegister: P\tProcolo: POP3\tClient address: %s Origin address: %s\tUsername: %s\tPassword: %s\n",
+               buf,
                users[*p->userIndex].name,
                sockaddr_to_human(client, 100, (struct sockaddr *) p->client),
-               sockaddr_to_human(orig, 100, (struct sockaddr *) p->origin));
+               sockaddr_to_human(orig, 100, (struct sockaddr *) p->origin),
+               p->username, p->password);
         free(orig);
         free(client);
-        debug(etiqueta, (int) p->current_index, (char *) p->password, 0);
+        debug(label, (int) p->current_index, (char *) p->password, 0);
         return pass_read_reset(p, b);
     }
 

@@ -83,7 +83,7 @@ static const struct state_definition *mng_describe_states();
 
 /** crea un nuevo struct mng */
 static struct socks5 *mng_new(int client_fd) {
-    char *etiqueta = "MNG NEW";
+    char *label = "MNG NEW";
     struct socks5 *ret;
 
     if (mng_pool == NULL) {
@@ -105,7 +105,7 @@ static struct socks5 *mng_new(int client_fd) {
     ret->origin_fd = -1;
 
     //// INITIAL STATE
-    debug(etiqueta, MNG_HELLO_READ, "Setting first state", client_fd);
+    debug(label, MNG_HELLO_READ, "Setting first state", client_fd);
     ret->stm.initial = MNG_HELLO_READ;
     ret->stm.max_state = MNG_ERROR;
     ret->stm.current = &client_mng[0];
@@ -116,35 +116,35 @@ static struct socks5 *mng_new(int client_fd) {
     ret->done_state = MNG_DONE;
     ret->error_state = MNG_ERROR;
 
-    debug(etiqueta, 0, "Init buffers", client_fd);
+    debug(label, 0, "Init buffers", client_fd);
     buffer_init(&ret->read_buffer, N(ret->raw_buff_a), ret->raw_buff_a);
     buffer_init(&ret->write_buffer, N(ret->raw_buff_b), ret->raw_buff_b);
 
     ret->references = 1;
     return ret;
     finally:
-    debug(etiqueta, 0, "Error creating mng struct", client_fd);
+    debug(label, 0, "Error creating mng struct", client_fd);
     return ret;
 }
 
 /** Intenta aceptar la nueva conexión entrante*/
 static void mng_destroy(struct socks5 *s);
 void mng_passive_accept(struct selector_key *key) {
-    char *etiqueta = "MNG PASSIVE ACCEPT";
+    char *label = "MNG PASSIVE ACCEPT";
     struct sockaddr_storage client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
     struct socks5 *state = NULL;
 
-    debug(etiqueta, 0, "Starting pasive accept", key->fd);
+    debug(label, 0, "Starting pasive accept", key->fd);
     const int client = accept(key->fd, (struct sockaddr *) &client_addr, &client_addr_len);
-    debug(etiqueta, client, "Accept connection", key->fd);
+    debug(label, client, "Accept connection", key->fd);
     if (client == -1) {
         goto fail;
     }
     if (selector_fd_set_nio(client) == -1) {
         goto fail;
     }
-    debug(etiqueta, 0, "Creating mng struct", key->fd);
+    debug(label, 0, "Creating mng struct", key->fd);
     state = mng_new(client);
     if (state == NULL) {
         // sin un estado, nos es imposible manejaro.
@@ -154,16 +154,16 @@ void mng_passive_accept(struct selector_key *key) {
     }
     memcpy(&state->client_addr, &client_addr, client_addr_len);
     state->client_addr_len = client_addr_len;
-    debug(etiqueta, 0, "Registering client with read interest to selector", key->fd);
+    debug(label, 0, "Registering client with read interest to selector", key->fd);
     selector_status ss = selector_register(key->s, client, &mng_handler,
                                            OP_READ, state);
     if (SELECTOR_SUCCESS != ss) {
-        debug(etiqueta, ss, "Error registering", key->fd);
+        debug(label, ss, "Error registering", key->fd);
         goto fail;
     }
     return;
     fail:
-    debug(etiqueta, 0, "Fail", key->fd);
+    debug(label, 0, "Fail", key->fd);
     if (client != -1) {
         close(client);
     }

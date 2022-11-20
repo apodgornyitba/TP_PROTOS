@@ -8,18 +8,10 @@
 #include "socks5nio.h"
 #include "request.h"
 
-/**
- * Handler del pedido de obtener la información de un FQDN
- * @param ptr
- * @return
- */
+/* Handler del pedido de obtener la información de un FQDN */
 void *request_resolv_blocking(void *ptr);
 
-/**
- * Función que se llama cuando se termino la obtención de la información del FQDN
- * @param key
- * @return
- */
+/* Función que se llama cuando se termino la obtención de la información del FQDN */
 unsigned request_resolv_done(struct selector_key *key);
 
 #endif

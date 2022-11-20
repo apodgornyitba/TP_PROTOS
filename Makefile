@@ -32,7 +32,7 @@ buffer.o:			buffer.h
 args.o:				args.h
 main.o:				main.h
 netutils.o:			netutils.h
-dissec_parser.o: 	password_parser.h
+password_parser.o: 	password_parser.h
 
 
 all: server  client

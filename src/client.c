@@ -7,17 +7,15 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <arpa/inet.h>
+#include <errno.h>
 #include "../include/client_args.h"
 #include "../include/debug.h"
 #include "../include/client_utils.h"
 
-#define MAX 80
-#define PORT 8080
-#define SA struct sockaddr
-
+FILE * append_file;
 int main(const int argc, const char **argv)
 {
-    struct m16args * args = malloc(sizeof(struct m16args));
+    struct management_args * args = malloc(sizeof(struct management_args));
     if(args == NULL) {
         exit(EXIT_FAILURE);
     }
@@ -34,34 +32,56 @@ int main(const int argc, const char **argv)
         exit(1);
     }
 
+    if(args->append){
+        append_file = fopen(args->file_path, "a");
+        if(append_file == NULL){
+            printf("Error opening %s\n", args->file_path);
+            return -1;
+        }
+    } else append_file = NULL;
+
     int debug_option = args->debug;
     debug_init(debug_option);
 
     int sockfd;
-    struct sockaddr_in servaddr;
 
-    // socket create and verification
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd == -1) {
-        printf("socket creation failed...\n");
-        exit(0);
-    }
-    else
-        printf("Socket successfully created..\n");
-    bzero(&servaddr, sizeof(servaddr));
-
-    // assign IP, PORT
-    servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
-    servaddr.sin_port = htons(PORT);
-
-    // connect the client socket to server socket
-    if (connect(sockfd, (SA*)&servaddr, sizeof(servaddr)) != 0) {
-        printf("connection with the server failed...\n");
-        exit(0);
-    }
-    else
-        printf("connected to the server..\n");
+    switch (args->mng_family) {
+        case AF_UNSPEC:{
+            sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
+            if (sockfd < 0) {
+                debug("M16 CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
+            }
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
+                debug("M16 CLIENT FATAL", 0, "ipv4 connect() failed",0);
+                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                goto end;
+            }
+            break;
+        }
+        case AF_INET:{
+            sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
+            if (sockfd < 0) {
+                debug("M16 CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
+            }
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
+                debug("M16 CLIENT FATAL", 0, "ipv4 connect() failed",0);
+                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                goto end;
+            }
+            break;
+        }
+        case AF_INET6:{
+            sockfd= socket(AF_INET6, SOCK_STREAM,IPPROTO_TCP);
+            if (sockfd < 0) {
+                debug("M16 CLIENT FATAL", sockfd, "ipv6 socket() failed",0);
+            }
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info6, sizeof(struct sockaddr_in6)) < 0) {
+                debug("M16 CLIENT FATAL", 0, "ipv6 connect() failed",0);
+                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                goto end;
+            }
+            break;
+        }    
 
     int ret=handshake(sockfd, args->user);
     if(ret < 0){
@@ -105,4 +125,5 @@ int main(const int argc, const char **argv)
     free(args);
 
     return 0;
+}
 }

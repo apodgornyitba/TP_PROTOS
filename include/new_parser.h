@@ -1,11 +1,10 @@
 #ifndef MYPARSER_H
 #define MYPARSER_H
+
 #include "buffer.h"
 #include "debug.h"
 
-/**
- * Parser states
- */
+/* Parser states */
 enum parser_state
 {
     single_read,
@@ -29,7 +28,7 @@ typedef struct parser{
     uint8_t size;
     enum parser_state current;
 
-    struct parser_substate ** states;  //Hay que hacer malloc y después free
+    struct parser_substate ** states;
 
     uint8_t error;
 

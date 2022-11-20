@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <check.h>
-
 #include "../include/parser.h"
-
 // definición de maquina
 
 enum states {
@@ -58,8 +56,6 @@ static struct parser_definition definition = {
     .states_n     = states_n,
     .start_state  = S0,
 };
-
-//// TEST
 
 static void assert_eq(const unsigned type, const int c, const struct parser_event *e) {
     ck_assert_ptr_eq (0,    e->next);

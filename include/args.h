@@ -1,4 +1,5 @@
 /* Codigo provisto por la cátedra */
+/* MODIFICADO */
 
 #ifndef ARGS_H_kFlmYm1tW9p5npzDr2opQJ9jM8
 #define ARGS_H_kFlmYm1tW9p5npzDr2opQJ9jM8
@@ -29,19 +30,16 @@ struct socks5args {
 
     uint16_t buffer_size, mng_buffer_size;
 
-    bool disectors_enabled;
+    uint8_t disectors_enabled;
+
+    char * credentials;
 
 };
 
-/** Interpreta la linea de comandos (argc, argv) llenando
+/* Interpreta la linea de comandos (argc, argv) llenando
  * args con defaults o la seleccion humana.
- * @param argc
- * @param argv
- * @param args
- * @return
- * -1 si hubo error o una de las opciones es solo de imprimir a STDOUT.
- * 0 caso contrario
- */
+ * Devuelve -1 si hubo error o una de las opciones es solo de imprimir a STDOUT.
+ * Devuelve 0 caso contrario */
 int parse_args(const int argc, char * const * argv, struct socks5args * args);
 
 #endif

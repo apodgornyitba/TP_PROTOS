@@ -11,8 +11,7 @@
 void mng_passive_accept(struct selector_key *key);
 
 /* declaraciÃ³n forward de los handlers de selecciÃ³n de una conexiÃ³n
- * establecida entre un cliente y el proxy.
- */
+ * establecida entre un cliente y el proxy. */
 
 void mng_read(struct selector_key *key);
 

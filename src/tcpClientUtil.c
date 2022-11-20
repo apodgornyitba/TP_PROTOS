@@ -8,8 +8,8 @@
 #include <netdb.h>
 #include "../include/logger.h"
 #include "../include/util.h"
-#define MAX_ADDR_BUFFER 128
 
+#define MAX_ADDR_BUFFER 128
 
 int tcpClientSocket(const char *host, const char *service) {
 	char addrBuffer[MAX_ADDR_BUFFER];

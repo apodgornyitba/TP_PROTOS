@@ -172,7 +172,7 @@ unsigned hello_read(struct selector_key *key) {
     debug(label, 0, "Starting stage", key->fd);
     struct hello_st *d = &ATTACHMENT(key)->client.hello;
     if(d->status==HELLO_ERROR){
-        debug(etiqueta, 0, "Hello read init error", key->fd);
+        debug(label, 0, "Hello read init error", key->fd);
         return ATTACHMENT(key)->error_state;
     }
     unsigned  ret      = HELLO_READ;

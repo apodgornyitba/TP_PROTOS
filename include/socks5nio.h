@@ -7,6 +7,10 @@
 #include "stm.h"
 #include "password_parser.h"
 
+#define MAX_USERS 255
+/** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
+#define ATTACHMENT(key) ( (struct socks5 *)(key)->data)
+
 /* handler del socket pasivo que atiende conexiones socksv5 */
 void socksv5_passive_accept(struct selector_key * key);
 
@@ -131,18 +135,10 @@ typedef struct socks5 {
 
 static void socks5_destroy(struct socks5 *s);
 
-/**
- * Par username password
- */
+/* Par username password */
 struct users {
     char *name;
     char *pass;
 };
-
-#define MAX_USERS 10
-
-/** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
-#define ATTACHMENT(key) ( (struct socks5 *)(key)->data)
-
 
 #endif

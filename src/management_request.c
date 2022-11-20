@@ -3,6 +3,7 @@
 #include "../include/management.h"
 #include "../include/states.h"
 #include "../include/socks5nio.h"
+#include "../include/management_request.h"
 
 extern uint8_t auth_method;
 #define METHOD_NO_AUTHENTICATION_REQUIRED 0x00
@@ -40,7 +41,7 @@ int checkIndex(uint8_t const *ptr, uint8_t size, uint8_t *error) {
         case mng_request_index_delete_user:
         case mng_request_index_disable_auth:
         case mng_request_index_disable_password_disectors:
-        case mng_request_index_shutdown_server:
+        //case mng_request_index_shutdown_server:
             return true;
         default: {
             *error = mng_status_index_not_supported;
@@ -50,8 +51,8 @@ int checkIndex(uint8_t const *ptr, uint8_t size, uint8_t *error) {
 }
 
 void mng_request_index_init(const unsigned state, struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST INDEX INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST INDEX INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
@@ -75,7 +76,7 @@ void mng_request_index_init(const unsigned state, struct selector_key *key) {
 
     //// Read index
     d->parser->states[0] = malloc(sizeof(parser_substate));
-     if(d->parser->states==NULL){
+     if(d->parser->states[0]==NULL){
         d->status=mng_status_server_error;
         return;
     }
@@ -90,17 +91,17 @@ void mng_request_index_init(const unsigned state, struct selector_key *key) {
 
     parser_init(d->parser);
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 unsigned mng_request_index_read(struct selector_key *key) {
 
-    char *etiqueta = "MNG REQUEST INDEX READ";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST INDEX READ";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
 
     if(d->status!=mng_status_succeeded){
-        debug(etiqueta, 0, "Error from mng request index INIT", key->fd);
+        debug(label, 0, "Error from mng request index INIT", key->fd);
         status_mng_marshal(d->wb, d->status);
         if (SELECTOR_SUCCESS != selector_set_interest_key(key, OP_WRITE))
             return MNG_ERROR;
@@ -113,7 +114,7 @@ unsigned mng_request_index_read(struct selector_key *key) {
     size_t count;
     ssize_t n;
 
-    debug(etiqueta, 0, "Reading from client", key->fd);
+    debug(label, 0, "Reading from client", key->fd);
     ptr = buffer_write_ptr(d->rb, &count);
     if (count <= 0){
         d->status=mng_status_server_error;
@@ -126,15 +127,15 @@ unsigned mng_request_index_read(struct selector_key *key) {
     if (n > 0) {
 
         buffer_write_adv(d->rb, n);
-        debug(etiqueta, n, "Finished reading", key->fd);
+        debug(label, n, "Finished reading", key->fd);
 
-        debug(etiqueta, 0, "Starting mng index consume", key->fd);
+        debug(label, 0, "Starting mng index consume", key->fd);
         const enum parser_state st = consume(d->rb, d->parser, &error);
 
         if (is_done(st, 0)) {
-            debug(etiqueta, error, "Finished mng index consume", key->fd);
+            debug(label, error, "Finished mng index consume", key->fd);
             if (error) {
-                debug(etiqueta, mng_status_index_not_supported,
+                debug(label, mng_status_index_not_supported,
                       "MNG index no supported -> Change to write to notify client", 0);
                 d->status = mng_status_index_not_supported;
                 status_mng_marshal(d->wb, d->status);
@@ -155,16 +156,16 @@ unsigned mng_request_index_read(struct selector_key *key) {
             }
         }
     } else {
-        debug(etiqueta, n, "Error, nothing to read", key->fd);
+        debug(label, n, "Error, nothing to read", key->fd);
         ret = MNG_ERROR;
     }
-    debug(etiqueta, error, "Finished stage", key->fd);
+    debug(label, error, "Finished stage", key->fd);
     return ret;
 }
 
 void mng_request_index_close(const unsigned state, struct selector_key *key) {
-    char *etiqueta = "MNG READ INDEX CLOSE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG READ INDEX CLOSE";
+    debug(label, 0, "Starting stage", key->fd);
     struct parser *p = ATTACHMENT(key)->client.mng_request.parser;
     if(p!=NULL) {
         if (p->states != NULL) {
@@ -180,12 +181,12 @@ void mng_request_index_close(const unsigned state, struct selector_key *key) {
         }
         free(p);
     }
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 void mng_request_init(const unsigned state, struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
@@ -209,17 +210,17 @@ void mng_request_init(const unsigned state, struct selector_key *key) {
                 return;
             break;
         default: {
-            debug(etiqueta, 0, "MNG REQUEST INIT WITH INVALID INDEX. Bug!", 0);
+            debug(label, 0, "MNG REQUEST INIT WITH INVALID INDEX. Bug!", 0);
             abort();
         }
     }
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 unsigned mng_request_read(struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST READ";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST READ";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     if(d->status!=mng_status_succeeded){
         status_mng_marshal(d->wb, d->status);
@@ -234,26 +235,26 @@ unsigned mng_request_read(struct selector_key *key) {
     size_t count;
     ssize_t n;
 
-    debug(etiqueta, 0, "Reading from client", key->fd);
+    debug(label, 0, "Reading from client", key->fd);
     ptr = buffer_write_ptr(d->rb, &count);
     n = recv(key->fd, ptr, count, 0);       //// Leo solo uno para ver el index
     if (n > 0) {
 
         buffer_write_adv(d->rb, n);
-        debug(etiqueta, n, "Finished reading", key->fd);
+        debug(label, n, "Finished reading", key->fd);
 
-        debug(etiqueta, 0, "Starting mng consume", key->fd);
+        debug(label, 0, "Starting mng consume", key->fd);
         const enum parser_state st = consume(d->rb, d->parser, &error);
 
         if (is_done(st, 0)) {
-            debug(etiqueta, error, "Finished mng consume", key->fd);
-            debug(etiqueta, 0, "Setting selector interest to write", key->fd);
+            debug(label, error, "Finished mng consume", key->fd);
+            debug(label, 0, "Setting selector interest to write", key->fd);
             if (SELECTOR_SUCCESS == selector_set_interest_key(key, OP_WRITE)) {
                 if(error){
                     ret = MNG_ERROR;
-                    debug(etiqueta, 0, "Error parsing in MNG_REQUEST_READ", 0);
+                    debug(label, 0, "Error parsing in MNG_REQUEST_READ", 0);
                 } else {
-                    debug(etiqueta, 0, "Starting mng request data processing", 0);
+                    debug(label, 0, "Starting mng request data processing", 0);
                     process_mng_params_request(key, d->wb, d->index);
                     ret = MNG_REQUEST_WRITE;
                 }
@@ -262,16 +263,16 @@ unsigned mng_request_read(struct selector_key *key) {
             }
         }
     } else {
-        debug(etiqueta, n, "Error, nothing to read", key->fd);
+        debug(label, n, "Error, nothing to read", key->fd);
         ret = MNG_ERROR;
     }
-    debug(etiqueta, error, "Finished stage", key->fd);
+    debug(label, error, "Finished stage", key->fd);
     return ret;
 }
 
 void mng_request_close(const unsigned state, struct selector_key *key) {
-    char *etiqueta = "MNG READ INDEX CLOSE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG READ INDEX CLOSE";
+    debug(label, 0, "Starting stage", key->fd);
     struct parser *p = ATTACHMENT(key)->client.mng_request.parser;
      if(p!=NULL) {
         if (p->states != NULL) {
@@ -286,21 +287,22 @@ void mng_request_close(const unsigned state, struct selector_key *key) {
             free(p->states);
         }
         free(p);
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    }
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 void mng_request_write_init(unsigned state, struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST WRITE INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST WRITE INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 unsigned mng_request_write(struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST WRITE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST WRITE";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
 
     unsigned ret = MNG_REQUEST_WRITE;
@@ -309,31 +311,31 @@ unsigned mng_request_write(struct selector_key *key) {
     ssize_t n;
 
 
-    debug(etiqueta, 0, "Writing to client", key->fd);
+    debug(label, 0, "Writing to client", key->fd);
     ptr = buffer_read_ptr(d->wb, &count);
     n = send(key->fd, ptr, count, MSG_NOSIGNAL);
 
     if(n==-1){
-        debug(etiqueta, 0, "Error on send", key->fd);
-        debug(etiqueta, 0, "Finished stage", key->fd);
+        debug(label, 0, "Error on send", key->fd);
+        debug(label, 0, "Finished stage", key->fd);
         return MNG_ERROR;
     }
 
     buffer_read_adv(d->wb, n);
     if(!buffer_can_read(d->wb)){        //// So no puedo leer más, termino el estado
-        debug(etiqueta, d->status, "Finished writing to client", 0);
+        debug(label, d->status, "Finished writing to client", 0);
         return MNG_DONE;
     }
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
     return ret;
 }
 
 void mng_request_write_close(unsigned state, struct selector_key * key){
-    char * etiqueta = "MNG REQUEST WRITE CLOSE";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char * label = "MNG REQUEST WRITE CLOSE";
+    debug(label, 0, "Starting stage", key->fd);
     //// Nothing to close or free
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
 }
 
 //// Historic connections
@@ -412,8 +414,6 @@ enum mng_state process_mng_index(struct selector_key *key, buffer *wb, enum mng_
         case mng_request_index_disable_password_disectors:               //// Disable password dissectors
             return MNG_REQUEST_READ;
 
-        case mng_request_index_shutdown_server:                          //// Shutdown server
-            abort();
         default: {
             return MNG_ERROR;
         }
@@ -465,7 +465,7 @@ void disablePasswordDissectors(const uint8_t * option){
 }
 
 void process_mng_params_request(struct selector_key *key, buffer *wb, enum mng_request_indexes index) {
-    char *etiqueta = "PROCESS MNG PARAMS REQUEST";
+    char *label = "PROCESS MNG PARAMS REQUEST";
     struct mng_request_st * st = &ATTACHMENT(key)->client.mng_request;
 
     switch (index) {
@@ -485,6 +485,7 @@ void process_mng_params_request(struct selector_key *key, buffer *wb, enum mng_r
         }
         case mng_request_index_disable_auth:{
             disableAuth(st->parser->states[0]->result);
+            status_mng_marshal(wb, mng_status_succeeded);
             break;
         }
         case mng_request_index_disable_password_disectors:{
@@ -502,9 +503,8 @@ void process_mng_params_request(struct selector_key *key, buffer *wb, enum mng_r
         case mng_request_index_historic_connections_attempts:
         case mng_request_index_average_bytes_per_read:
         case mng_request_index_average_bytes_per_write:
-        case mng_request_index_shutdown_server:
         default:
-            debug(etiqueta, index, "Incorrect index", 0);
+            debug(label, index, "Incorrect index", 0);
             status_mng_marshal(wb, mng_status_server_error);
             break;
     }
@@ -531,7 +531,7 @@ void supported_indexes_mng_request_marshall(buffer *wb) {
         return;
     int i = 0;
     buf[i++] = 0x00;
-    buf[i++] = 0x0F;
+    buf[i++] = 0x0E;
     buf[i++] = 0x00;
     buf[i++] = 0x01;
     buf[i++] = 0x02;
@@ -546,7 +546,6 @@ void supported_indexes_mng_request_marshall(buffer *wb) {
     buf[i++] = 0x0B;
     buf[i++] = 0x0C;
     buf[i++] = 0x0D;
-    buf[i++] = 0xFF;
 
     buffer_write_adv(wb, i);
 }
@@ -576,7 +575,6 @@ void list_users_mng_request_marshall(buffer *wb, struct selector_key *key) {
     char *user;
     while (auxUsers != 0) {
         buf[i++] = userLengths[iUsers];
-        strcpy((char *)(buf + i), users[iUsers].name);
         user = users[iUsers].name;
         memcpy((char *) (buf + i), user, userLengths[iUsers]);
         i += userLengths[iUsers++];
@@ -596,8 +594,8 @@ void status_mng_marshal(buffer *wb, enum mng_reply_status status) {
 }
 
 struct parser *mng_request_index_add_user_parser_init(struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST ADD USER PARSER INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST ADD USER PARSER INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
@@ -656,13 +654,13 @@ struct parser *mng_request_index_add_user_parser_init(struct selector_key *key) 
 
     parser_init(d->parser);
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
     return d->parser;
 }
 
 struct parser *mng_request_index_delete_user_parser_init(struct selector_key *key) {
-    char *etiqueta = "MNG REQUEST DELETE USER PARSER INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "MNG REQUEST DELETE USER PARSER INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
@@ -703,13 +701,13 @@ struct parser *mng_request_index_delete_user_parser_init(struct selector_key *ke
 
     parser_init(d->parser);
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
     return d->parser;
 }
 
 struct parser *mng_request_index_yes_no_value(struct selector_key *key) {
-    char *etiqueta = "AUTH READ INIT";
-    debug(etiqueta, 0, "Starting stage", key->fd);
+    char *label = "AUTH READ INIT";
+    debug(label, 0, "Starting stage", key->fd);
     struct mng_request_st *d = &ATTACHMENT(key)->client.mng_request;
     d->rb = &(ATTACHMENT(key)->read_buffer);
     d->wb = &(ATTACHMENT(key)->write_buffer);
@@ -748,6 +746,6 @@ struct parser *mng_request_index_yes_no_value(struct selector_key *key) {
 
     parser_init(d->parser);
 
-    debug(etiqueta, 0, "Finished stage", key->fd);
+    debug(label, 0, "Finished stage", key->fd);
     return d->parser;
 }

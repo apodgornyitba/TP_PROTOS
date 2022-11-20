@@ -66,7 +66,6 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
                 substate->result = malloc(1);
                 substate->result[0] = 0;
                 p->index = p->index + 1;
-                substate = (p->states[p->index]);
                 if(p->index >= p->size) {
                     p->current = done_read;
                     break;

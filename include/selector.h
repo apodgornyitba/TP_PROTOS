@@ -155,11 +155,8 @@ selector_status selector_set_interest_key(struct selector_key *key, fd_interest 
  * Retorna luego de cada iteración, o al llegar al timeout. */
 selector_status selector_select(fd_selector s);
 
-/**
- * Método de utilidad que activa O_NONBLOCK en un fd.
- *
- * retorna -1 ante error, y deja detalles en errno.
- */
+/* Método de utilidad que activa O_NONBLOCK en un fd.
+ * retorna -1 ante error, y deja detalles en errno. */
 int selector_fd_set_nio(const int fd);
 
 /** notifica que un trabajo bloqueante terminó */

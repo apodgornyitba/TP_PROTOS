@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <check.h>
-
 #include "../include/parser_utils.h"
 
 static void assert_eq(const unsigned type, const int c, const struct parser_event *e) {

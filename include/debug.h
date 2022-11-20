@@ -7,6 +7,6 @@
 
 void debug_init(int setting);
 void debug_file_close();
-void debug(char * etiqueta, int codigo,char * mensaje, int extra);
+void debug(char * label, int codigo, char * mensaje, int extra);
 
 #endif

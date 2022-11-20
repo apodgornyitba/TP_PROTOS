@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <check.h>
-
 #include "../include/netutils.h"
 
 START_TEST (test_sockaddr_to_human_ipv4) {
