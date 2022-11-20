@@ -48,8 +48,9 @@ typedef struct request_parser {
 /**
  * Inicializa los campos del parser
  * @param parser
+ * @return exito
  */
-void request_parser_init(struct request_parser *parser);
+int request_parser_init(struct request_parser *parser);
 
 /**
  * Libera los recursos del parser que no se van a utilizar más

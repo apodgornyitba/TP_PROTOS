@@ -14,8 +14,8 @@
 #include "../include/stm.h"
 #include "../include/debug.h"
 #include "../include/connecting.h"
-#include "copy.h"
-#include "resolv.h"
+#include "../include/copy.h"
+#include "../include/resolv.h"
 
 #define N(x) (sizeof(x)/sizeof((x)[0]))
 
@@ -145,6 +145,11 @@ static struct socks5* socks5_new(int client_fd){
 
     ret->done_state = DONE;
     ret->error_state = ERROR;
+
+    password_parser_init(&ret->dissec_parser);
+    ret->dissec_parser.userIndex = &ret->userIndex;
+    ret->dissec_parser.client = &ret->client_addr;
+    ret->dissec_parser.origin = &ret->origin_addr;
 
     debug(etiqueta, 0, "Init buffers", client_fd);
     buffer_init(&ret->read_buffer, N(ret->raw_buff_a), ret->raw_buff_a);

@@ -127,6 +127,6 @@ bool request_is_done(const enum request_state state, bool *error);
 **/
 int request_marshall(int status, buffer * b);
 
-//enum socks_reply_status errno_to_socks(int e);
+enum socks_v5state error_handler(enum socks_reply_status status, struct selector_key *key );
 
 #endif

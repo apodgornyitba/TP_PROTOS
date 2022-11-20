@@ -9,6 +9,8 @@
 
 extern struct users users[MAX_USERS];
 extern int nusers;
+extern struct users admins[MAX_USERS];
+extern int nadmins;
 
 #define VERSION_ERROR 32
 
@@ -35,36 +37,69 @@ void auth_read_init(unsigned state, struct selector_key *key){
     d->wb = &(ATTACHMENT(key)->write_buffer);
 
     int total_states = 5;
+    d->status=AUTH_SUCCESS;
 
     d->parser = malloc(sizeof(*d->parser));
+    if(d->parser == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
 
     d->parser->size = total_states;
 
     d->parser->states = malloc(sizeof(parser_substate *) * total_states);
+    if(d->parser->states == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
 
     //// Read version
     d->parser->states[0] = malloc(sizeof(parser_substate));
+    if(d->parser->states[0] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[0]->state = long_read;
     d->parser->states[0]->remaining = d->parser->states[0]->size = 1;
     d->parser->states[0]->result = malloc(sizeof(uint8_t) + 1);
+    if(d->parser->states[0]->result == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[0]->check_function = checkVersion;
 
     //// Nread for username
     d->parser->states[1] = malloc(sizeof(parser_substate));
+    if(d->parser->states[1] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[1]->state = read_N;
 
     //// Read username
     d->parser->states[2] = malloc(sizeof(parser_substate));
+    if(d->parser->states[2] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[2]->state = long_read;
     d->parser->states[2]->result = NULL;
     d->parser->states[2]->check_function = NULL;
 
     //// Nread for username
     d->parser->states[3] = malloc(sizeof(parser_substate));
+    if(d->parser->states[3] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[3]->state = read_N;
 
     //// Read password
     d->parser->states[4] = malloc(sizeof(parser_substate));
+    if(d->parser->states[4] == NULL) {
+        d->status = AUTH_ERROR;
+        return;
+    }
     d->parser->states[4]->state = long_read;
     d->parser->states[4]->result = NULL;
     d->parser->states[4]->check_function = NULL;
@@ -84,6 +119,10 @@ unsigned auth_read(struct selector_key *key){
     char *etiqueta = "AUTH READ";
     debug(etiqueta, 0, "Starting stage", key->fd);
     struct userpass_st *d = &ATTACHMENT(key)->client.userpass;
+    if(d->status==AUTH_ERROR){
+        debug(etiqueta, 0, "Error from auth_read_init", key->fd);
+        return ATTACHMENT(key)->error_state;
+    }
     unsigned ret = USERPASS_READ;
     bool error = false;
     uint8_t *ptr;
@@ -143,14 +182,20 @@ void auth_read_close(unsigned state, struct selector_key *key){
     char *etiqueta = "AUTH READ CLOSE";
     debug(etiqueta, 0, "Starting stage", key->fd);
     struct parser *p = ATTACHMENT(key)->client.userpass.parser;
-    for (int i = 0; i < p->size; ++i) {
-        if (p->states[i]->state == long_read && p->states[i]->result != NULL) {
-            free(p->states[i]->result);
+    if(p != NULL) {
+        if (p->states != NULL) {
+            for (int i = 0; i < p->size; ++i) {
+                if (p->states[i] != NULL) {
+                    if (p->states[i]->state == long_read && p->states[i]->result != NULL) {
+                        free(p->states[i]->result);
+                    }
+                    free(p->states[i]);
+                }
+            }
+            free(p->states);
         }
-        free(p->states[i]);
+        free(p);
     }
-    free(p->states);
-    free(p);
     debug(etiqueta, 0, "Finished stage", key->fd);
 }
 
@@ -250,12 +295,12 @@ uint8_t checkCredentials(uint8_t * username, uint8_t * password){
  * @param password
  * @return
  */
-uint8_t checkMngCredentials(uint8_t *username, uint8_t *password) {
-    //// TODO: Change to real MNG credentials
-    for (int i = 0; i < nusers; ++i) {
-        if (strcmp((char *) username, users[i].name) == 0) {
-            if (strcmp((char *) password, users[i].pass) == 0)
+uint8_t checkCredentials(uint8_t *username, uint8_t *password, struct selector_key * key) {
+    for (int i = 0; i < nadmins; ++i) {
+        if (strcmp((char *) username, admins[i].name) == 0) {
+            if (strcmp((char *) password, admins[i].pass) == 0){
                 return 0x00;
+            }
         }
     }
     return 0x01;
@@ -277,7 +322,7 @@ int auth_process(struct userpass_st *d, struct selector_key * key){
     uint8_t *password = d->parser->states[4]->result;
 
     if(data->isSocks)
-        data->authentication = checkCredentials(username, password);
+        data->authentication = checkCredentials(username, password, key);
     else
         data->authentication = checkMngCredentials(username, password);
 

@@ -2,9 +2,9 @@ CFLAGS= -g -I./include --std=c11 -pedantic -pedantic-errors -Wall -Wextra -Werro
 # CFLAGS= -g -I./include --std=c11 -Wall -Wextra -Wno-unused-parameter -Wno-unused-function -Wno-implicit-fallthrough -D_POSIX_C_SOURCE=200112L
 
 CLIENT_C_FILES = src/client.o src/client_utils.o src/client_args.o src/debug.o src/address_utils.o
+SERVER_C_FILES =  src/netutils.o src/selector.o src/stm.o src/new_parser.o src/authentication.o src/password_parser.o src/socks5nio.o src/mng_nio.o src/mng_request.o src/connecting.o src/hello.o src/request_parser.o src/resolv.o src/request.o src/copy.o src/debug.o src/address_utils.o src/socket_utils.o src/buffer.o src/args.o src/main.o
 
 LDFLAGS = -lpthread -pthread
-SERVER_C_FILES =   src/selector.o src/stm.o src/new_parser.o src/authentication.o src/socks5nio.o src/management.o src/management_request.o src/connecting.o src/hello.o src/request_parser.o src/resolv.o src/request.o src/copy.o src/debug.o src/address_utils.o src/socket_utils.o src/buffer.o src/args.o src/main.o
 
 management.o: management.h
 management_request.o: management_request.h
@@ -31,6 +31,8 @@ socket_utils.o:		socket_utils.h
 buffer.o:			buffer.h
 args.o:				args.h
 main.o:				main.h
+netutils.o:			netutils.h
+dissec_parser.o: 	password_parser.h
 
 
 all: server  client

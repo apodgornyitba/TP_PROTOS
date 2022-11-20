@@ -34,6 +34,7 @@
 #include "../include/debug.h"
 #include "../include/management.h"
 
+#define CREDENTIALS "../credentials.txt"
 #define SELECTOR_INITIAL_ELEMENTS 1024
 static bool done = false;
 #define DEFAULT_AUTH_METHOD 0x02
@@ -68,6 +69,8 @@ static void sigterm_handler(const int signal) {
 
 struct users users[MAX_USERS];
 int nusers = 0;
+struct users admins[MAX_USERS];
+int nadmins = 0;
 
 int main(const int argc, const char **argv) {
 
@@ -82,12 +85,23 @@ int main(const int argc, const char **argv) {
 
 
     /*  Get configurations and users    */
-    // TODO Ver el casteo este
     int parse_args_result = parse_args(argc, (char *const *)argv, args);
 
     if(parse_args_result == -1){
         free(args);
         exit(1);
+    }
+
+    FILE * fd = fopen(CREDENTIALS_PATH, "r");
+    char user[255], pass[255], * newUsername, * newPassword;
+    nadmins = 0;
+    while (nadmins < MAX_USERS && fscanf(fd, "%s %s", user, pass) != EOF){
+        newUsername = malloc(strlen(user) + 1);
+        newPassword = malloc(strlen(pass) + 1);
+        strcpy(newUsername, (char *)user);
+        strcpy(newPassword, (char *)pass);
+        admins[nadmins].name = newUsername;
+        admins[nadmins++].pass = newPassword;
     }
 
     /* Debugging */
@@ -338,5 +352,11 @@ int main(const int argc, const char **argv) {
     if(socket6 >= 0) {
         close(socket6);
     }
+
+    for (int i = 0; i < nadmins; ++i) {
+        free(admins[i].name);
+        free(admins[i].pass);
+    }
+
     return ret;
 }

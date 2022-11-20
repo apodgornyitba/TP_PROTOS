@@ -1,5 +1,6 @@
 #include "../include/copy.h"
 #include <stdlib.h>
+#include "../include/password_parser.h"
 
 fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
 {
@@ -28,6 +29,8 @@ fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
 
     return ret;
 }
+
+extern uint8_t password_dissectors;
 
 void copy_init(const unsigned int state, struct selector_key *key) {
     char * etiqueta = "COPY INIT";
@@ -106,8 +109,9 @@ unsigned copy_read(struct selector_key *key) {
     }
     else
     {
-        buffer_write_adv(b, n);
-        //// Add bytes read
+        if(password_dissectors == 0x00)
+            password_consume(ptr, n, &ATTACHMENT(key)->dissec_parser);
+
         if (total_reads == 0) {
             metrics_average_bytes_per_read = n;
             total_reads++;

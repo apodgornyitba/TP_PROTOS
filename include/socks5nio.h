@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include "states.h"
 #include "stm.h"
+#include "password_parser.h"
 
 /* handler del socket pasivo que atiende conexiones socksv5 */
 void socksv5_passive_accept(struct selector_key * key);
@@ -121,6 +122,10 @@ typedef struct socks5 {
 
     /** Authentication result **/
     uint8_t authentication;
+
+    int userIndex;
+
+    struct password_parser password_parser;
 
 }socks5;
 
