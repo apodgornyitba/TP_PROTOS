@@ -53,7 +53,7 @@ enum password_parser_state password_parser_feed(struct password_parser *p, uint8
     return ret;
 }
 
-void dissec_consume(uint8_t *buffer, size_t size, struct password_parser *parser) {
+void password_consume(uint8_t *buffer, size_t size, struct password_parser *parser) {
     for (size_t i = 0; i < size; ++i) {
         parser->current = password_parser_feed(parser, buffer[i]);
     }

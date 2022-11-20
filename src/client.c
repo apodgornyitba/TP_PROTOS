@@ -75,7 +75,7 @@ int main(const int argc, const char **argv)
             if (sockfd < 0) {
                 debug("M16 CLIENT FATAL", sockfd, "ipv6 socket() failed",0);
             }
-            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info6, sizeof(struct sockaddr_in6)) < 0) {
+            if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info_6, sizeof(struct sockaddr_in6)) < 0) {
                 debug("M16 CLIENT FATAL", 0, "ipv6 connect() failed",0);
                 debug("M16 CLIENT FATAL", 0, strerror(errno),0);
                 goto end;

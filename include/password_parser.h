@@ -38,6 +38,6 @@
     enum password_parser_state password_parser_feed(struct password_parser *p, uint8_t b);
 
     /* Feeds the buffer to the parser. Buffer is not */
-    void dissec_consume(uint8_t *buffer, size_t size, struct password_parser *parser);
+    void password_consume(uint8_t *buffer, size_t size, struct password_parser *parser);
 
     #endif

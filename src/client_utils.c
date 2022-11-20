@@ -46,7 +46,7 @@ uint8_t handshake_response(int sockfd){
 
 int send_credentials(int sockfd, struct user* user){
     uint8_t buffer[510];
-    uint i = 0;
+    int i = 0;
     buffer[i++]=0x01;//subnegotiation version
 
     int userlen=strlen(user->username);
