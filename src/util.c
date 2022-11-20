@@ -6,8 +6,7 @@
 #include <arpa/inet.h>
 #include <stdlib.h>
 
-const char *
-printFamily(struct addrinfo *aip)
+const char * printFamily(struct addrinfo *aip)
 {
 	switch (aip->ai_family) {
 	case AF_INET:
@@ -23,8 +22,7 @@ printFamily(struct addrinfo *aip)
 	}
 }
 
-const char *
-printType(struct addrinfo *aip)
+const char * printType(struct addrinfo *aip)
 {
 	switch (aip->ai_socktype) {
 	case SOCK_STREAM:
@@ -40,8 +38,7 @@ printType(struct addrinfo *aip)
 	}
 }
 
-const char *
-printProtocol(struct addrinfo *aip)
+const char * printProtocol(struct addrinfo *aip)
 {
 	switch (aip->ai_protocol) {
 	case 0:
@@ -57,8 +54,7 @@ printProtocol(struct addrinfo *aip)
 	}
 }
 
-void
-printFlags(struct addrinfo *aip)
+void printFlags(struct addrinfo *aip)
 {
 	printf("flags");
 	if (aip->ai_flags == 0) {
@@ -79,8 +75,7 @@ printFlags(struct addrinfo *aip)
 	}
 }
 
-char *
-printAddressPort( const struct addrinfo *aip, char addr[]) 
+char * printAddressPort( const struct addrinfo *aip, char addr[]) 
 {
 	char abuf[INET6_ADDRSTRLEN];
 	const char *addrAux ;
@@ -108,9 +103,7 @@ printAddressPort( const struct addrinfo *aip, char addr[])
 	return addr;
 }
 
-
-int 
-printSocketAddress(const struct sockaddr *address, char *addrBuffer) {
+int printSocketAddress(const struct sockaddr *address, char *addrBuffer) {
 
 	void *numericAddress; 
 

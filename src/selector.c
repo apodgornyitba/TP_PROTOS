@@ -1,7 +1,7 @@
 /**
  * selector.c - un muliplexor de entrada salida
  */
-/* Codigo provisto por la cátedra */
+ /* Codigo provisto por la cátedra */
 
 #include <stdio.h>  // perror
 #include <stdlib.h> // malloc
@@ -17,6 +17,8 @@
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/signal.h>
+#include <signal.h>
+#include <pthread.h>
 #include "../include/selector.h"
 
 #define N(x) (sizeof(x)/sizeof((x)[0]))
@@ -47,6 +49,7 @@ const char * selector_error(const selector_status status) {
     }
     return msg;
 }
+
 
 static void wake_handler(const int signal) {
     // nada que hacer. está solo para interrumpir el select
@@ -93,22 +96,21 @@ finally:
 
 selector_status selector_close(void) {
     // Nada para liberar.
-    // TODO(juan): podriamos reestablecer el handler de la señal.
     return SELECTOR_SUCCESS;
 }
 
 // estructuras internas
 struct item {
-   int fd;
-   fd_interest interest;
-   const fd_handler * handler;
-   void * data;
+   int                 fd;
+   fd_interest         interest;
+   const fd_handler   *handler;
+   void *              data;
 };
 
 /* tarea bloqueante */
 struct blocking_job {
     /** selector dueño de la resolucion */
-    fd_selector s;
+    fd_selector  s;
     /** file descriptor dueño de la resolucion */
     int fd;
 
@@ -129,8 +131,8 @@ struct fdselector {
     // almacenamos en una jump table donde la entrada es el file descriptor.
     // Asumimos que el espacio de file descriptors no va a ser esparso; pero
     // esto podría mejorarse utilizando otra estructura de datos
-    struct item * fds;
-    size_t fd_size;  // cantidad de elementos posibles de fds
+    struct item    *fds;
+    size_t          fd_size;  // cantidad de elementos posibles de fds
 
     /** fd maximo para usar en select() */
     int max_fd;  // max(.fds[].fd)
@@ -138,7 +140,7 @@ struct fdselector {
     /** descriptores prototipicos ser usados en select */
     fd_set master_r, master_w;
     /** para ser usado en el select() (recordar que select cambia el valor) */
-    fd_set slave_r, slave_w;
+    fd_set  slave_r,  slave_w;
 
     /** timeout prototipico para usar en select() */
     struct timespec master_t;
@@ -146,25 +148,23 @@ struct fdselector {
     struct timespec slave_t;
 
     // notificaciónes entre blocking jobs y el selector
-    volatile pthread_t selector_thread;
+    volatile pthread_t      selector_thread;
     /** protege el acceso a resolutions jobs */
-    pthread_mutex_t resolution_mutex;
+    pthread_mutex_t         resolution_mutex;
     /**
      * lista de trabajos blockeantes que finalizaron y que pueden ser
      * notificados.
      */
-    struct blocking_job * resolution_jobs;
+    struct blocking_job    *resolution_jobs;
 };
 
 /** cantidad máxima de file descriptors que la plataforma puede manejar */
-#define ITEMS_MAX_SIZE FD_SETSIZE
+#define ITEMS_MAX_SIZE      FD_SETSIZE
 
 // en esta implementación el máximo está dado por el límite natural de select(2).
 
-/**
- * determina el tamaño a crecer, generando algo de slack para no tener
- * que realocar constantemente.
- */
+/* determina el tamaño a crecer, generando algo de slack para no tener
+ * que realocar constantemente. */
 static size_t next_capacity(const size_t n) {
     unsigned bits = 0;
     size_t tmp = n;
@@ -186,10 +186,8 @@ static inline void item_init(struct item *item) {
     item->fd = FD_UNUSED;
 }
 
-/**
- * inicializa los nuevos items. `last' es el indice anterior.
- * asume que ya está blanqueada la memoria.
- */
+/* inicializa los nuevos items. `last' es el indice anterior.
+ * asume que ya está blanqueada la memoria. */
 static void items_init(fd_selector s, const size_t last) {
     assert(last <= s->fd_size);
     for(size_t i = last; i < s->fd_size; i++) {
@@ -197,9 +195,7 @@ static void items_init(fd_selector s, const size_t last) {
     }
 }
 
-/**
- * calcula el fd maximo para ser utilizado en select()
- */
+/* calcula el fd maximo para ser utilizado en select() */
 static int items_max_fd(fd_selector s) {
     int max = 0;
     for(int i = 0; i <= s->max_fd; i++) {
@@ -228,11 +224,9 @@ static void items_update_fdset_for_fd(fd_selector s, const struct item * item) {
     }
 }
 
-/**
- * garantizar cierta cantidad de elemenos en `fds'.
+/* garantizar cierta cantidad de elemenos en `fds'.
  * Se asegura de que `n' sea un número que la plataforma donde corremos lo
- * soporta
- */
+ * soporta */
 static selector_status ensure_capacity(fd_selector s, const size_t n) {
     selector_status ret = SELECTOR_SUCCESS;
 
@@ -304,9 +298,12 @@ void selector_destroy(fd_selector s) {
                 }
             }
             pthread_mutex_destroy(&s->resolution_mutex);
-            for(struct blocking_job *j = s->resolution_jobs; j != NULL;
-                j = j->next) {
-                free(j);
+            struct blocking_job *j = s->resolution_jobs;
+            struct blocking_job *aux ;
+            while(j != NULL) {
+                aux = j;
+                j = j->next;
+                free(aux);
             }
             free(s->fds);
             s->fds     = NULL;
@@ -318,7 +315,7 @@ void selector_destroy(fd_selector s) {
 
 #define INVALID_FD(fd)  ((fd) < 0 || (fd) >= ITEMS_MAX_SIZE)
 
-selector_status selector_register(fd_selector s, const int fd, const fd_handler *handler, const fd_interest  interest, void *data) {
+selector_status selector_register(fd_selector s, const int fd, const fd_handler *handler, const fd_interest interest, void *data) {
     selector_status ret = SELECTOR_SUCCESS;
     // 0. validación de argumentos
     if(s == NULL || INVALID_FD(fd) || handler == NULL) {
@@ -420,10 +417,8 @@ selector_status selector_set_interest_key(struct selector_key *key, fd_interest 
     return ret;
 }
 
-/**
- * se encarga de manejar los resultados del select.
- * se encuentra separado para facilitar el testing
- */
+/* se encarga de manejar los resultados del select.
+ * se encuentra separado para facilitar el testing */
 static void handle_iteration(fd_selector s) {
     int n = s->max_fd;
     struct selector_key key = {
@@ -462,9 +457,10 @@ static void handle_block_notifications(fd_selector s) {
         .s = s,
     };
     pthread_mutex_lock(&s->resolution_mutex);
+    struct blocking_job * aux;
     for(struct blocking_job *j = s->resolution_jobs;
         j != NULL ;
-        j  = j->next) {
+        j  = aux) {
 
         struct item *item = s->fds + j->fd;
         if(ITEM_USED(item)) {
@@ -472,7 +468,7 @@ static void handle_block_notifications(fd_selector s) {
             key.data = item->data;
             item->handler->handle_block(&key);
         }
-
+        aux = j->next;
         free(j);
     }
     s->resolution_jobs = 0;
@@ -482,7 +478,6 @@ static void handle_block_notifications(fd_selector s) {
 selector_status selector_notify_block(fd_selector s, const int fd) {
     selector_status ret = SELECTOR_SUCCESS;
 
-    // TODO(juan): usar un pool
     struct blocking_job *job = malloc(sizeof(*job));
     if(job == NULL) {
         ret = SELECTOR_ENOMEM;
@@ -498,13 +493,14 @@ selector_status selector_notify_block(fd_selector s, const int fd) {
     pthread_mutex_unlock(&s->resolution_mutex);
 
     // notificamos al hilo principal
-    pthread_kill(s->selector_thread, conf.signal);
+    // pthread_kill(s->selector_thread, conf.signal);
 
 finally:
     return ret;
 }
 
-selector_status selector_select(fd_selector s) {
+selector_status
+selector_select(fd_selector s) {
     selector_status ret = SELECTOR_SUCCESS;
 
     memcpy(&s->slave_r, &s->master_r, sizeof(s->slave_r));
@@ -513,7 +509,8 @@ selector_status selector_select(fd_selector s) {
 
     s->selector_thread = pthread_self();
 
-    int fds = pselect(s->max_fd + 1, &s->slave_r, &s->slave_w, 0, &s->slave_t, &emptyset);
+    int fds = pselect(s->max_fd + 1, &s->slave_r, &s->slave_w, 0, &s->slave_t,
+                      &emptyset);
     if(-1 == fds) {
         switch(errno) {
             case EAGAIN:
