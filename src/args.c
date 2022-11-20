@@ -46,12 +46,12 @@ static int user(char *s, struct users *user) {
     } else {
         *p = 0;
         p++;
-        char * s = malloc(strlen(s));
-        char * p = malloc(strlen(p));
-        strcpy(s, (char *)s);
-        strcpy(p (char *)p);
-        user->name = s;
-        user->pass = p;
+        char * newUsername = malloc(strlen(s) + 1);
+        char * newPassword = malloc(strlen(p) + 1);
+        strcpy(newUsername, (char *)s);
+        strcpy(newPassword, (char *)p);
+        user->name = newUsername;
+        user->pass = newPassword;
     }
     return 0;
 }

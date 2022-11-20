@@ -159,10 +159,6 @@ static struct socks5* socks5_new(int client_fd){
 
 /** realmente destruye */
 static void socks5_destroy_(struct socks5* s) {
-    if(s->origin_resolution != NULL) {
-        freeaddrinfo(s->origin_resolution);
-        s->origin_resolution = 0;
-    }
     free(s);
 }
 
@@ -271,8 +267,6 @@ void socksv5_passive_accept(struct selector_key *key) {
             socks5_destroy(ATTACHMENT(key));
         }
 
-        extern unsigned int metrics_concurrent_connections;
-
         void socksv5_done(struct selector_key* key) {
             const int fds[] = {
                     ATTACHMENT(key)->client_fd,
@@ -286,5 +280,4 @@ void socksv5_passive_accept(struct selector_key *key) {
                     close(fds[i]);
                 }
             }
-            metrics_concurrent_connections -= 1;
         }

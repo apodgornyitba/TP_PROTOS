@@ -45,9 +45,9 @@ void connecting_init(const unsigned state, struct selector_key *key){
     exit(EXIT_FAILURE);
 }
 
-extern unsigned int metrics_historic_connections;
-extern unsigned int metrics_concurrent_connections;
-extern unsigned int metrics_max_concurrent_connections;
+extern size_t metrics_historic_connections;
+extern size_t metrics_concurrent_connections;
+extern size_t metrics_max_concurrent_connections;
 unsigned connecting_write(struct selector_key *key) {
     char * etiqueta = "CONNECTING WRITE";
     debug(etiqueta, 0, "Starting stage", key->fd);
@@ -72,7 +72,7 @@ unsigned connecting_write(struct selector_key *key) {
         metrics_historic_connections += 1;
         metrics_concurrent_connections += 1;
         if(metrics_concurrent_connections > metrics_max_concurrent_connections)
-            metrics_concurrent_connections = metrics_max_concurrent_connections;
+            metrics_max_concurrent_connections = metrics_concurrent_connections;
 
         debug(etiqueta, 0, "Connection succeed", key->fd);
         data->orig.conn.status=status_succeeded;
@@ -107,6 +107,8 @@ unsigned connecting_write(struct selector_key *key) {
             debug(etiqueta, 0, "No more IPs -> REQUEST_WRITE to reply error to client", key->fd);
             request_marshall(errno_to_socks(error), &data->write_buffer);
             selector_set_interest_key(key, OP_WRITE);
+            if(data->client.request.addr_family == socks_req_addrtype_domain)
+                freeaddrinfo(data->origin_resolution);
             return REQUEST_WRITE;
         }
 
@@ -172,7 +174,7 @@ enum socks_reply_status errno_to_socks(int e){
     return ret;
 }
 
-extern unsigned int metrics_historic_connections_attempts;
+extern size_t metrics_historic_connections_attempts;
 void connection(struct selector_key *key){
     char * etiqueta = "CONNECTION";
     debug(etiqueta, 0, "Starting stage", key->fd);

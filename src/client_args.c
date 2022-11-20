@@ -46,7 +46,7 @@ int parse_args(const int argc, char *const * argv, struct m16args *args) {
     args->mng_port = 8080;
     args->mng_family = AF_UNSPEC;
     memset(&args->mng_addr_info, 0, sizeof(args->mng_addr_info));
-    memset(&args->mng_addr_info6, 0, sizeof(args->mng_addr_info6));
+    memset(&args->mng_addr_info_6, 0, sizeof(args->mng_addr_info_6));
 
     int c;
     int aux;
@@ -70,7 +70,7 @@ int parse_args(const int argc, char *const * argv, struct m16args *args) {
                     return -1;
                 break;
             case 'L':
-                args->mng_family = address_processing(optarg, &args->mng_addr_info, &args->mng_addr_info6, args->mng_port);
+                args->mng_family = address_processing(optarg, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
                 if(args->mng_family == -1){
                     printf("Unable to resolve address type. Please, enter a valid address.\n");
                     return -1;
@@ -88,7 +88,7 @@ int parse_args(const int argc, char *const * argv, struct m16args *args) {
                     return -1;
                 args->mng_port = (unsigned short)aux;
                 args->mng_addr_info.sin_port = htons(aux);
-                args->mng_addr_info6.sin6_port = htons(aux);
+                args->mng_addr_info_6.sin6_port = htons(aux);
                 break;
             default:
                 fprintf(stderr, "unknown argument %d.\n", c);
@@ -105,12 +105,12 @@ int parse_args(const int argc, char *const * argv, struct m16args *args) {
         return -1;
     }
     if(args->mng_family == AF_UNSPEC){
-        aux = address_processing(args->mng_addr, &args->mng_addr_info, &args->mng_addr_info6, args->mng_port);
+        aux = address_processing(args->mng_addr, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
         if(aux == -1){
             printf("Error processing default IPv4 address for mng.\n");
             return -1;
         }
-        aux = address_processing(args->mng_addr_6, &args->mng_addr_info, &args->mng_addr_info6, args->mng_port);
+        aux = address_processing(args->mng_addr_6, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
         if(aux == -1){
             printf("Error processing default IPv6 address for mng.\n");
             return -1;

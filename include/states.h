@@ -55,6 +55,8 @@ typedef struct request_st
     //struct request request;
     struct request_parser * parser;
 
+    int addr_family;
+
     enum socks_reply_status status;
 
     struct sockaddr_storage *origin_addr;

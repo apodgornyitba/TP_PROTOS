@@ -146,6 +146,7 @@ unsigned request_process(struct selector_key *key, struct request_st *d)
     switch (d->parser->request->dest_addr_type) {
 
         case socks_req_addrtype_ipv4: {
+            d->addr_family = socks_req_addrtype_ipv4;
             debug(etiqueta, 0, "IPV4", key->fd);
             struct sockaddr_in * addr4 = (struct sockaddr_in *) &(data->client.request.parser->request->dest_addr);
             data->origin_domain = AF_INET;
@@ -158,6 +159,7 @@ unsigned request_process(struct selector_key *key, struct request_st *d)
         }
 
         case socks_req_addrtype_ipv6: {
+            d->addr_family = socks_req_addrtype_ipv6;
             debug(etiqueta, 0, "IPV6", key->fd);
             struct sockaddr_in6 * addr6 = (struct sockaddr_in6 *) &(data->client.request.parser->request->dest_addr);
             data->origin_domain = AF_INET6;
@@ -170,10 +172,10 @@ unsigned request_process(struct selector_key *key, struct request_st *d)
             }
 
         case socks_req_addrtype_domain: {
+            d->addr_family = socks_req_addrtype_domain;
             debug(etiqueta, 0, "FQDN", key->fd);
 
             struct selector_key *k= malloc(sizeof (*key));
-
                 if(k==NULL){
                     debug(etiqueta, 0, "Malloc error -> REQUEST_WRITE to reply error to client", key->fd);
                     data->orig.conn.status = status_general_socks_server_failure;

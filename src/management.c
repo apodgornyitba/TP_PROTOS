@@ -22,11 +22,10 @@ static const struct state_definition client_mng[] = {
                 .on_read_ready = hello_read,
         },
         {
-            .state = MNG_HELLO_WRITE,
-            .on_arrival = hello_write_init,
-            .on_departure = hello_write_close,
-            .on_write_ready = hello_write
-
+                .state = MNG_HELLO_WRITE,
+                .on_arrival = hello_write_init,
+                .on_departure = hello_write_close,
+                .on_write_ready = hello_write
         },
         {
                 .state = MNG_USERPASS_READ,
@@ -53,10 +52,10 @@ static const struct state_definition client_mng[] = {
                 .on_read_ready = mng_request_read,
         },
         {
-            .state = MNG_REQUEST_WRITE,
-            .on_arrival = mng_request_write_init,
-            .on_departure = mng_request_write_close,
-            .on_write_ready = mng_request_write,
+                .state = MNG_REQUEST_WRITE,
+                .on_arrival = mng_request_write_init,
+                .on_departure = mng_request_write_close,
+                .on_write_ready = mng_request_write,
         },
         {
                 .state = MNG_DONE,

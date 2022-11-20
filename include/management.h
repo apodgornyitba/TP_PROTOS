@@ -37,7 +37,6 @@ enum mng_state {
      *   - HELLO_WRITE cuando estÃ¡ completo
      *   - ERROR       ante cualquier error (IO/parseo)
      */
-    HELLO_READ,
     MNG_HELLO_READ,
 
     /**
@@ -51,12 +50,9 @@ enum mng_state {
      *   - REQUEST_READ cuando se enviaron todos los bytes
      *   - ERROR        ante cualquier error (IO/parseo)
      */
-    HELLO_WRITE,
     MNG_HELLO_WRITE,
 
     //AUTH,
-    USERPASS_READ,
-    USERPASS_WRITE,
     MNG_USERPASS_READ,
     MNG_USERPASS_WRITE,
 
