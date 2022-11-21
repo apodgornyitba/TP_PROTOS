@@ -29,7 +29,6 @@ int addr6_process(int server, struct sockaddr_in6 * addr){
 }
 
 int create_socket(int type, struct sockaddr_in * addr, struct sockaddr_in6 * addr6){
-    char * label = "SOCKET UTILS";
     if(type != AF_INET && type != AF_INET6){
         err_msg = "Wrong socket type";
         printf("%s\n", err_msg);
@@ -37,11 +36,11 @@ int create_socket(int type, struct sockaddr_in * addr, struct sockaddr_in6 * add
     }
     int server;
     if(type == AF_INET) {
-        debug(label, 0, "Creando socket de IPv4", 0);
+       /* Creando socket de IPv4 */
         server = socket(type, SOCK_STREAM, IPPROTO_TCP);
     }
     else {
-        debug(label, 0, "Creando socket de IPv6", 0);
+        /* Creando socket de IPv6 */
         server = socket(type, SOCK_STREAM, IPPROTO_TCP);
     }
 
@@ -51,7 +50,7 @@ int create_socket(int type, struct sockaddr_in * addr, struct sockaddr_in6 * add
         return ERROR;
     }
 
-    // man 7 ip. no importa reportar nada si falla.
+    // man 7 ip
     setsockopt(server, SOL_SOCKET, SO_REUSEADDR, &(int){ 1 }, sizeof(int));
 
     if(type == AF_INET) {
@@ -75,9 +74,5 @@ int create_socket(int type, struct sockaddr_in * addr, struct sockaddr_in6 * add
         printf("%s\n", err_msg);
         return ERROR;
     }
-    if(type == AF_INET)
-        debug(label, 0, "Se creo el socket de IPv4", server);
-    else
-        debug(label, 0, "Se creo el socket de IPv6", server);
     return server;
 }

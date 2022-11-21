@@ -26,8 +26,6 @@ struct socks5args {
     struct sockaddr_in  mng_addr_info;
     struct sockaddr_in6 mng_addr_info_6;
 
-    int debug;
-
     uint16_t buffer_size, mng_buffer_size;
 
     uint8_t disectors_enabled;

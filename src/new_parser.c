@@ -10,14 +10,12 @@ void parser_init(struct parser *p)
 
 enum parser_state parser_feed(struct parser *p, uint8_t b)
 {
-    static char * label = "MY PARSER FEED";
     parser_substate * substate = (p->states[p->index]);
 
     switch (p->current){
         case single_read:
             *(substate->result) = b;
             if(substate->check_function == NULL){
-                debug(label, b, "Single read OK", 0);
                 p->index = p->index + 1;
                 substate = (p->states[p->index]);
                 if(p->index >= p->size)
@@ -30,7 +28,6 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
 
             if (substate->check_function(substate->result, 1, &p->error))   // Check result
             {
-                debug(label, b, "Single read OK", 0);
                 p->index = p->index + 1;
                 substate = (p->states[p->index]);
                 if(p->index >= p->size)
@@ -40,7 +37,6 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
             }
             else
             {
-                debug(label, b, "Single read check returned false", 0);
                 substate->state = error_read;
             }
             break;
@@ -59,10 +55,8 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
             substate->size = b;
             p->current = substate->state;
 
-            debug(label, b, "Received N for long_read", 0);
             if (substate->remaining <= 0)      // Si es cero, pongo un string vacio y salteo la fase de long_read
             {
-                debug(label, b, "N is 0", 0);
                 substate->result = malloc(1);
                 substate->result[0] = 0;
                 p->index = p->index + 1;
@@ -82,8 +76,6 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
 
         case long_read:
 
-            debug(label, b, "Read", substate->remaining);
-
             (substate->result)[(substate->size - substate->remaining)] = b;
 
             (substate->remaining)--;
@@ -91,12 +83,9 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
             if (substate->remaining <= 0)
             {
                 (substate->result)[(substate->size)] = 0;
-                debug(label, 0, "Finished long read", substate->remaining);
                 if (substate->check_function != NULL)
                 {
-                    debug(label, 0, "Running check on long read", 0);
                     if(!(substate->check_function( substate->result, substate->size, &p->error))) {
-                        debug(label, 0, "Error on check", 0);
                         p->current = error_read;
                         break;
                     }
@@ -113,10 +102,10 @@ enum parser_state parser_feed(struct parser *p, uint8_t b)
             }
             break;
         case done_read:
-                debug(label, 0, "DONE", 0);
+                /* DONE */
             break;
         case error_read:
-                debug(label, (p->error), "ERROR", 0);
+                /* ERROR */
             break;
         default:
             abort();

@@ -1,6 +1,6 @@
 /* buffer.c - buffer con acceso directo (útil para I/O) que mantiene
  * puntero de lectura y de escritura. */
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Juan Codagnone) */
 
 #include <string.h>
 #include <stdint.h>

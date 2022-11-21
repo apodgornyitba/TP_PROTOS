@@ -4,25 +4,20 @@
 
 fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
 {
-    char * label = "COPY COMPUTE INTERESTS";
-    debug(label, 0, "Setting interest", d->fd);
     fd_interest ret = OP_NOOP;
 
     if(d->fd != -1)
     {
         if (((d->interest & OP_READ) && buffer_can_write(d->rb)) )
         {
-            debug(label, 0, "Add read interest", d->fd);
             ret |= OP_READ;
         }
         if ((d->interest & OP_WRITE) && buffer_can_read(d->wb) )
         {
-            debug(label, 0, "Add write interest", d->fd);
             ret |= OP_WRITE;
         }
         if (SELECTOR_SUCCESS != selector_set_interest(s, d->fd, ret))
         {
-            debug(label, 0, "Error setting interests", d->fd);
             abort();
         }
     }
@@ -33,8 +28,6 @@ fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
 extern uint8_t password_dissectors;
 
 void copy_init(const unsigned int state, struct selector_key *key) {
-    char * label = "COPY INIT";
-    debug(label, 0, "Starting stage", key->fd);
 
     struct copy_st *d = &ATTACHMENT(key)->client.copy;
     d->fd = ATTACHMENT(key)->client_fd;
@@ -55,15 +48,12 @@ void copy_init(const unsigned int state, struct selector_key *key) {
 }
 
 void * copy_ptr(struct selector_key *key){
-    char * label = "COPY PTR";
     int current_fd = key->fd;
     struct socks5 * data = key->data;
     if(current_fd ==  data->origin_fd){
-        debug(label, 0, "Working on origin", key->fd);
         return &data->orig.copy;
     }
     if(current_fd ==  data->client_fd){
-        debug(label, 0, "Working on client", key->fd);
         return &data->client.copy;
     }
     return NULL;
@@ -75,11 +65,8 @@ extern size_t metrics_average_bytes_per_read;
 extern size_t total_reads;
 extern size_t metrics_concurrent_connections;
 unsigned copy_read(struct selector_key *key) {
-    char * label = "COPY READ";
-    debug(label, 0, "Starting stage", key->fd);
     struct copy_st *d = copy_ptr(key);
     if(d == NULL){
-        debug(label, 0, "Failed getting copy ptr", key->fd);
         exit(EXIT_FAILURE);
     }
     assert(d->fd == key->fd);
@@ -88,15 +75,12 @@ unsigned copy_read(struct selector_key *key) {
     buffer *b = d->rb;
     unsigned ret = COPY;
 
-    debug(label, 0, "Starting read", key->fd);
     uint8_t *ptr = buffer_write_ptr(b, &size);
     n = recv(key->fd, ptr, size, 0);
 
-    debug(label, n, "Finished recv", key->fd);
     if (n <= 0)
     {
         // Si error o EOF cierro el canal de lectura y el canal de escritura del origin
-        debug(label, n, "Error or EOF: Shutdown read channel and oposite write channel", key->fd);
         shutdown(d->fd, SHUT_RD);
         d->interest &= ~OP_READ;
         if (d->other_copy->fd != -1)
@@ -119,13 +103,11 @@ unsigned copy_read(struct selector_key *key) {
         }
         metrics_historic_byte_transfer += n;
         buffer_write_adv(b, n);
-        debug(label, n, "Buffer write adv", key->fd);
     }
     copy_compute_interests(key->s, d);
     copy_compute_interests(key->s, d->other_copy);
     if (d->interest == OP_NOOP)
     {
-        debug(label, n, "Socket has no more interests -> DONE state", key->fd);
         metrics_concurrent_connections -= 1;
         ret = DONE;
     }
@@ -137,8 +119,6 @@ unsigned copy_read(struct selector_key *key) {
 extern size_t metrics_average_bytes_per_write;
 extern size_t total_writes;
 unsigned copy_write(struct selector_key *key) {
-    char * label = "COPY WRITE";
-    debug(label, 0, "Starting stage", key->fd);
     struct copy_st *d = copy_ptr(key);
 
     assert(d->fd == key->fd);
@@ -147,7 +127,6 @@ unsigned copy_write(struct selector_key *key) {
     buffer *b = d->wb;
     unsigned ret = COPY;
 
-    debug(label, 0, "Starting write", key->fd);
     uint8_t *ptr = buffer_read_ptr(b, &size);
     n = send(key->fd, ptr, size, MSG_NOSIGNAL);
 
@@ -173,13 +152,11 @@ unsigned copy_write(struct selector_key *key) {
             total_writes++;
         }
         buffer_read_adv(b, n);
-        debug(label, n, "Buffer read adv", key->fd);
     }
     copy_compute_interests(key->s, d);
     copy_compute_interests(key->s, d->other_copy);
     if (d->interest == OP_NOOP)
     {
-        debug(label, n, "Socket has no more interests -> DONE state", key->fd);
         metrics_concurrent_connections -= 1;
         ret = DONE;
     }

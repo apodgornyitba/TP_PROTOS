@@ -7,7 +7,6 @@
 #include <string.h>    /* memset */
 #include <errno.h>
 #include <getopt.h>
-#include "../include/debug.h"
 #include "../include/address_utils.h"
 #include "../include/args.h"
 
@@ -46,6 +45,7 @@ static int user(char *s, struct users *user) {
     } else {
         *p = 0;
         p++;
+        //nuevo
         char * newUsername = malloc(strlen(s) + 1);
         char * newPassword = malloc(strlen(p) + 1);
         strcpy(newUsername, (char *)s);
@@ -66,9 +66,6 @@ static int usage(const char *progname) {
             "\n"
             "   -h               Imprime la ayuda y termina.\n"
             "   -l <SOCKS addr>  Dirección donde servirÃ¡ el proxy SOCKS.\n"
-            "   -d               Activa el debugging por STDOUT.\n"
-            "   -D               Activa el debugging por el archivo debugging.txt.\n"
-            "   -b <buffer size> Setea el tamaño del buffer del proxy SOCKS\n"
             "   -N               Deshabilita los passwords disectors.\n"
             "   -L <conf  addr>  Dirección donde servirÃ¡ el servicio de management.\n"
             "   -p <SOCKS port>  Puerto entrante conexiones SOCKS.\n"
@@ -81,7 +78,6 @@ static int usage(const char *progname) {
 
 int parse_args(const int argc, char * const *argv, struct socks5args * args) {
     memset(args, 0, sizeof(*args)); // sobre todo para setear en null los punteros de users
-
     // Default values
     args->socks_addr = "0.0.0.0";
     args->socks_addr_6 = "::";
@@ -102,26 +98,17 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
 
     args->disectors_enabled = 0x00;
 
-    args->debug = 0;
-
     int c;
     int aux;
 
     while (true) {
         int option_index = 0;     
 
-        c = getopt_long(argc, argv, "dDhl:L:Np:P:f:u:v", NULL, &option_index);
+        c = getopt_long(argc, argv, "hl:L:Np:P:f:u:v", NULL, &option_index);
         if (c == -1)
             break;
 
         switch (c) {
-            //MODO DEBUG
-            case 'd':
-                args->debug = STDOUT_DEBUG;
-                break;
-            case 'D':
-                args->debug = FILE_DEBUG;
-                break;
             case 'h':
                 return usage(argv[0]);
             case 'l':

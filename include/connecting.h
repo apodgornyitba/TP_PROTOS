@@ -2,7 +2,6 @@
 #define CONNECTING_H
 
 #include "selector.h"
-#include "debug.h"
 #include "socks5nio.h"
 #include "stm.h"
 #include "request.h"

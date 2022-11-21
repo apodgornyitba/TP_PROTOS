@@ -2,7 +2,6 @@
 #define MYPARSER_H
 
 #include "buffer.h"
-#include "debug.h"
 
 /* Parser states */
 enum parser_state
