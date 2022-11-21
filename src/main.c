@@ -54,8 +54,8 @@ static void sigterm_handler(const int signal) {
 }
 
 struct users users[MAX_USERS];
-int nusers = 0;
 struct users admins[MAX_USERS];
+int nusers = 0;
 int nadmins = 0;
 
 int main(const int argc, const char **argv) {

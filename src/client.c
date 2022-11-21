@@ -49,11 +49,11 @@ int main(const int argc, const char **argv)
         case AF_UNSPEC:{
             sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
             if (sockfd < 0) {
-                debug("M16 CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
+                debug("MANAGEMENT CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
             }
             if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
-                debug("M16 CLIENT FATAL", 0, "ipv4 connect() failed",0);
-                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                debug("MANAGEMENT CLIENT FATAL", 0, "ipv4 connect() failed",0);
+                debug("MANAGEMENT CLIENT FATAL", 0, strerror(errno),0);
                 goto end;
             }
             break;
@@ -61,11 +61,11 @@ int main(const int argc, const char **argv)
         case AF_INET:{
             sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
             if (sockfd < 0) {
-                debug("M16 CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
+                debug("MANAGEMENT CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
             }
             if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
-                debug("M16 CLIENT FATAL", 0, "ipv4 connect() failed",0);
-                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                debug("MANAGEMENT CLIENT FATAL", 0, "ipv4 connect() failed",0);
+                debug("MANAGEMENT CLIENT FATAL", 0, strerror(errno),0);
                 goto end;
             }
             break;
@@ -73,16 +73,16 @@ int main(const int argc, const char **argv)
         case AF_INET6:{
             sockfd= socket(AF_INET6, SOCK_STREAM,IPPROTO_TCP);
             if (sockfd < 0) {
-                debug("M16 CLIENT FATAL", sockfd, "ipv6 socket() failed",0);
+                debug("MANAGEMENT CLIENT FATAL", sockfd, "ipv6 socket() failed",0);
             }
             if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info_6, sizeof(struct sockaddr_in6)) < 0) {
-                debug("M16 CLIENT FATAL", 0, "ipv6 connect() failed",0);
-                debug("M16 CLIENT FATAL", 0, strerror(errno),0);
+                debug("MANAGEMENT CLIENT FATAL", 0, "ipv6 connect() failed",0);
+                debug("MANAGEMENT CLIENT FATAL", 0, strerror(errno),0);
                 goto end;
             }
             break;
         }    
-
+    }
     int ret=handshake(sockfd, args->user);
     if(ret < 0){
         printf("Error in sending handshake\n");
@@ -111,19 +111,17 @@ int main(const int argc, const char **argv)
 
     int req_index;
     ret= send_request(sockfd, &req_index);
-    if(ret < 0){
-        printf("Send request error\n");
+    if(ret < 0)
         goto end;
-    }
 
     if(request_response(sockfd, req_index) <0)
         goto end;
 
     end:
-    close(sockfd);
+    if(sockfd >= 0)
+        close(sockfd);
     free(args->user);
     free(args);
 
     return 0;
-}
 }

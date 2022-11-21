@@ -75,7 +75,7 @@ int add_user(uint8_t* buffer){
     uint8_t password[255];
 
 
-    printf("Enter username to delete: ");
+    printf("Enter new username: ");
     scanf("%s",username);
     int nusername= strlen((char*)username);
     printf("Enter new password: ");
@@ -92,10 +92,9 @@ int add_user(uint8_t* buffer){
 int delete_user(uint8_t* buffer){
     uint8_t username[255];
 
-    printf("Enter new username: ");
+    printf("Enter username to delete: ");
     scanf("%s",username );
     int nusername= strlen((char*)username);
-
     buffer[1]=nusername;
     strcpy((char*)buffer+2,(char*) username);
 
@@ -202,18 +201,15 @@ void supported_indexes(char* buffer){
 
 void list_users(char* buffer){
     uint8_t b=buffer[1];//length
-    //printf("%s\n\n", buffer +2);
-    //printf("%d", b);
     int index=2;
     char aux[256];
     uint8_t user_len;
     for(uint8_t i=0 ; i < b ; i++){
         user_len=buffer[index++];
-        //printf("userlen= %d\n", user_len);
         strncpy(aux, buffer + index, user_len);
+        aux[user_len] = 0;
         printf("User: %s\n", aux);
         index+=user_len;
-        //printf("index= %d\n", index);
     }
 }
 
@@ -296,9 +292,6 @@ int request_response(int sockfd, int req_index){
             break;
         case 13://Disable password disectors.
             printf("Disabled/enabled password dissectors successfully\n");
-            break;
-        case 255:
-            buffer[0]=0xFF;
             break;
         default:
             return -1;
