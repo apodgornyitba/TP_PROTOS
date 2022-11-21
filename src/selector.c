@@ -489,7 +489,7 @@ selector_status selector_notify_block(fd_selector s, const int fd) {
     pthread_mutex_unlock(&s->resolution_mutex);
 
     // notificamos al hilo principal
-    // pthread_kill(s->selector_thread, conf.signal);
+    pthread_kill(s->selector_thread, conf.signal);
 
 finally:
     return ret;
