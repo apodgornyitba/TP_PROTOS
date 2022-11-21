@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
-#include "buffer.h"
-#include "selector.h"
-#include "states.h"
+#include "../include/buffer.h"
+#include "../include/selector.h"
+#include "../include/states.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <pthread.h>

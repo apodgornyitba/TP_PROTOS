@@ -27,7 +27,7 @@ struct parser_event {
 
     /* lista de eventos: si es diferente de null ocurrieron varios eventos */
     struct parser_event * next;
-} parser_event;
+};
 
 /** describe una transición entre estados  */
 struct parser_state_transition {
@@ -39,7 +39,7 @@ struct parser_state_transition {
     void (*act1)(struct parser_event * ret, const uint8_t c);
     /* otra acción opcional */
     void (*act2)(struct parser_event * ret, const uint8_t c);
-}parser_state_transition;
+};
 
 /* predicado para utilizar en `when' que retorna siempre true */
 static const unsigned ANY = 1 << 9;
@@ -55,7 +55,7 @@ struct parser_definition {
 
     /* estado inicial */
     const unsigned start_state;
-}parser_definition;
+};
 
 /**
  * inicializa el parser.

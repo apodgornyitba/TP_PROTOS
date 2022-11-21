@@ -70,7 +70,6 @@ static const struct state_definition client_statbl[] = {
                 .state = REQUEST_WRITE,
                 // .on_arrival = request_init,
                 // .on_departure = request_close,
-                // .on_read_ready = request_write,
                 .on_write_ready = request_write,
         },
         {       .state = COPY,

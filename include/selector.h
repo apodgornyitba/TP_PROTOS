@@ -76,16 +76,13 @@ struct selector_init {
 };
 
 /* inicializa la librería */
-selector_status
-selector_init(const struct selector_init *c);
+selector_status selector_init(const struct selector_init *c);
 
 /* deshace la incialización de la librería */
-selector_status
-selector_close(void);
+selector_status selector_close(void);
 
 /* instancia un nuevo selector. returna NULL si no puede instanciar  */
-fd_selector
-selector_new(const size_t initial_elements);
+fd_selector selector_new(const size_t initial_elements);
 
 /* destruye un selector creado por _new. Tolera NULLs */
 void selector_destroy(fd_selector s);
@@ -102,7 +99,7 @@ typedef enum fd_interest{
     OP_NOOP = 0,
     OP_READ = 1 << 0,
     OP_WRITE = 1 << 2,
-} fd_interest ;
+} fd_interest;
 
 /* Quita un interés de una lista de intereses */
 #define INTEREST_OFF(FLAG, MASK)  ( (FLAG) & ~(MASK) )
@@ -140,7 +137,7 @@ typedef struct fd_handler {
  *
  * @return 0 si fue exitoso el registro.
  */
-selector_status selector_register(fd_selector s, const int fd, const fd_handler * handler, const fd_interest  interest, void * data);
+selector_status selector_register(fd_selector s, const int fd, const fd_handler * handler, const fd_interest interest, void * data);
 
 /* desregistra un file descriptor del selector */
 selector_status selector_unregister_fd(fd_selector s, const int fd);

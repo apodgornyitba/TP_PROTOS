@@ -9,7 +9,7 @@
 
 #define MAX_USERS 255
 /** obtiene el struct (socks5 *) desde la llave de selecciÃ³n  */
-#define ATTACHMENT(key) ( (struct socks5 *)(key)->data)
+#define ATTACHMENT(key) ((struct socks5 *)(key)->data)
 
 /* handler del socket pasivo que atiende conexiones socksv5 */
 void socksv5_passive_accept(struct selector_key * key);
@@ -94,7 +94,7 @@ typedef struct socks5 {
     int origin_fd;
 
     /** maquinas de estados */
-    struct state_machine          stm;
+    struct state_machine stm;
 
     unsigned int error_state;
     unsigned int done_state;
