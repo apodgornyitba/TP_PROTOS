@@ -92,8 +92,6 @@ unsigned copy_read(struct selector_key *key) {
     uint8_t *ptr = buffer_write_ptr(b, &size);
     n = recv(key->fd, ptr, size, 0);
 
-    metrics_average_bytes_per_read += n;
-
     debug(label, n, "Finished recv", key->fd);
     if (n <= 0)
     {
@@ -152,8 +150,6 @@ unsigned copy_write(struct selector_key *key) {
     debug(label, 0, "Starting write", key->fd);
     uint8_t *ptr = buffer_read_ptr(b, &size);
     n = send(key->fd, ptr, size, MSG_NOSIGNAL);
-
-    metrics_average_bytes_per_write += n;
 
     if (n == -1)
     {

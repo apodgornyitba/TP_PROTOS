@@ -34,8 +34,8 @@ enum hello_state hello_parser_feed(struct hello_parser *p, uint8_t b)
             debug(label, b, "Number of methods received", 0);
             if (p->remaining <= 0)
             {
-                p->state = hello_done;
                 debug(label, b, "Number of methods received is 0", 0);
+                p->state = hello_done;
             }
             break;
         case hello_methods:

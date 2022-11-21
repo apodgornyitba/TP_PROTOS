@@ -1,9 +1,9 @@
 #include "../include/authentication.h"
-#include "selector.h"
-#include "new_parser.h"
-#include "states.h"
-#include "socks5nio.h"
-#include "parser.h"
+#include "../include/selector.h"
+#include "../include/new_parser.h"
+#include "../include/states.h"
+#include "../include/socks5nio.h"
+#include "../include/parser.h"
 #include <string.h>
 #include <stdlib.h>
 

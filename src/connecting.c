@@ -81,15 +81,10 @@ unsigned connecting_write(struct selector_key *key){
         return error_handler_to_client(data->orig.conn.status, key);
     }
 
-    //time_t rawtime;
-    //struct tm * timeinfo;
-    //time ( &rawtime );
-    //timeinfo = localtime ( &rawtime );
     struct sockaddr * origAddr = (struct sockaddr *) &ATTACHMENT(key)->origin_addr;
     struct sockaddr * clientAddr = (struct sockaddr *) &ATTACHMENT(key)->client_addr;
     char * orig = malloc(MAX_IP_LENGTH);
     char * client = malloc(MAX_IP_LENGTH);
-    //printf("%s\t to: %s \t from: %s \t %s\n", users[ATTACHMENT(key)->userIndex].name, sockaddr_to_human(orig, MAX_IP_LENGTH, origAddr), sockaddr_to_human(client, MAX_IP_LENGTH, clientAddr), asctime (timeinfo));
 
     debug(label, 0, "Starting stage", key->fd);
 
