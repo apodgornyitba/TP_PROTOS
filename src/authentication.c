@@ -10,6 +10,7 @@
 /*https://www.rfc-editor.org/rfc/rfc1929*/
 /*https://stackoverflow.com/questions/6054092/how-to-add-authentication-to-a-socks5-proxy-server*/
 /*https://stackoverflow.com/questions/49564243/socks5-connection-authentication*/
+
 extern struct users users[MAX_USERS];
 extern int nusers;
 extern struct users admins[MAX_USERS];

@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <stdint.h>
 
-//https://stackoverflow.com/questions/26323249/implement-tcp-hand-shake-in-c
+
 int handshake(int sockfd, struct user* user){
     uint8_t buffer[4];
     int bytes_to_send;
@@ -73,6 +73,7 @@ uint8_t credentials_response(int sockfd){
 int add_user(uint8_t* buffer){
     uint8_t username[255];
     uint8_t password[255];
+
 
     printf("Enter new username: ");
     scanf("%s",username);
