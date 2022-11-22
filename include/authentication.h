@@ -6,16 +6,17 @@
 
 /**
  * @section Authentication
+ * 
+ *  Once the SOCKS V5 server has started, and the client has selected the
+ *  Username/Password Authentication protocol, the Username/Password
+ *  subnegotiation begins. This begins with the client producing a
+ *  Username/Password request:
  *
- * Read and parse client Username/Password request:
  *      +-----+------+----------+------+----------+
  *      | VER | ULEN |   UNAME  | PLEN |  PASSWD  |
  *      +-----+------+----------+------+----------+
  *      |  1  |   1  | 1 to 255 |   1  | 1 to 255 |
  *      +-----+------+----------+------+----------+
- *
- *      Leaves result on userpass_st (user and password) received in key.
- *      @note Both fields in userpass_st need to be freed later.
  *
  *      The VER field contains the current version of the subnegotiation,
  *      which is X’01’. The ULEN field contains the length of the UNAME field
@@ -24,7 +25,8 @@
  *      PASSWD field that follows. The PASSWD field contains the password
  *      association with the given UNAME.
  *
- * Checks authentication and writes answer to client:
+ * The server verifies the supplied UNAME and PASSWD, and sends the
+ *  following response:
  *      +-----+--------+
  *      | VER | STATUS |
  *      +-----+--------+
