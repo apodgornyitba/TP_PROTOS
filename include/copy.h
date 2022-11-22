@@ -7,11 +7,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-/* Función principal del PROXY
- * Hace el pasa manos de información entre dos sockets.
- * Cuando termina pasa el estado DONE. */
 unsigned copy_write(struct selector_key *key);
 unsigned copy_read(struct selector_key *key);
 void copy_init(const unsigned int state, struct selector_key *key);
+fd_interest copy_compute_interests(fd_selector s, struct copy_st *d);
 
 #endif

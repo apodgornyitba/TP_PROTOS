@@ -1,5 +1,6 @@
-#include "../include/copy.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include "../include/copy.h"
 #include "../include/password_parser.h"
 
 // Initialize function
@@ -37,11 +38,11 @@ fd_interest copy_compute_interests(fd_selector s, struct copy_st *d) {
         }
         // If copy_st is interested in writing and buffer has contents
         if ((d->interest & OP_WRITE) && buffer_can_read(d->wb)) {
-            intereset |= OP_WRITE;
+            interest |= OP_WRITE;
         }
         // Set selector interests
         if (SELECTOR_SUCCESS != selector_set_interest(s, d->fd, interest)) {
-            fprintf(stderr,"Could not set interest of %d for %d", interest, d->fd)
+            fprintf(stderr,"Could not set interest of %d for %d", interest, d->fd);
             abort();
         }
     }
