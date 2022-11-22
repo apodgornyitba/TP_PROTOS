@@ -1,6 +1,5 @@
 /* socks5nio.c  - controla el flujo de un proxy SOCKSv5 (sockets no bloqueantes) */
-/* Codigo provisto por la cátedra (Juan Codagnone)*/
-/* MODIFICADO */
+/* Modificaciones realizadas a partir del codigo provisto por la cátedra (Juan Codagnone)*/
 
 #include <netdb.h>
 #include <stdlib.h>  // malloc

@@ -8,8 +8,7 @@ void parser_init(struct parser *p)
     p->error = 0;
 }
 
-enum parser_state parser_feed(struct parser *p, uint8_t b)
-{
+enum parser_state parser_feed(struct parser *p, uint8_t b) {
     parser_substate * substate = (p->states[p->index]);
 
     switch (p->current){

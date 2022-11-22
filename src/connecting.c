@@ -31,7 +31,7 @@ void connecting_init(const unsigned state, struct selector_key *key){
         return;
     }
 
-    //// Socket no bloqueante
+    // Socket no bloqueante
     int flag_setting = selector_fd_set_nio(*fd);
     if(flag_setting == -1) {
         data->orig.conn.status=status_general_socks_server_failure;
@@ -84,7 +84,7 @@ unsigned connecting_write(struct selector_key *key){
 
     if(getsockopt(key->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0){
         data->orig.conn.status=status_general_socks_server_failure;
-       time_t now;
+        time_t now;
         time(&now);
         char buf[sizeof "2011-10-08T07:07:09Z"];
         strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));

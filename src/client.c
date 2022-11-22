@@ -10,6 +10,34 @@
 #include <errno.h>
 #include "../include/client_args.h"
 #include "../include/client_utils.h"
+#include "../include/client.h"
+
+int handshake(int sockfd, struct user* user){
+    uint8_t buffer[4];
+    int bytes_to_send;
+    buffer[0]=0x01; //VERSION
+    if(user->credentials){
+        buffer[1]=0x02; //NMETODS
+        buffer[2]=0x00; //NO AUTHENTICATION REQUIRED
+        buffer[3]=0x02; //USERNAME/PASSWORD
+        bytes_to_send=4;
+    }else{
+        buffer[1]=0x01; //NMETODS
+        buffer[2]=0x00; //NO AUTHENTICATION REQUIRED
+        bytes_to_send=3;
+    }
+    return send(sockfd, buffer, bytes_to_send,0);
+}
+
+uint8_t handshake_response(int sockfd){
+    uint8_t buff[2];
+    int rec=recv(sockfd, buff, 2, 0);
+    if(rec != 2) {
+        fprintf(stderr,"Error: handshake_response failed\n");
+        return 0xFF;
+    }
+    return buff[1];
+}
 
 FILE * append_file;
 int main(const int argc, const char **argv)
@@ -34,7 +62,7 @@ int main(const int argc, const char **argv)
     if(args->append){
         append_file = fopen(args->file_path, "a");
         if(append_file == NULL){
-            printf("Error opening %s\n", args->file_path);
+            fprintf(stderr,"Error opening %s\n", args->file_path);
             return -1;
         }
     } else append_file = NULL;

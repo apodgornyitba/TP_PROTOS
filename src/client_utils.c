@@ -13,37 +13,6 @@
 #include <stdint.h>
 
 
-int handshake(int sockfd, struct user* user){
-    uint8_t buffer[4];
-    int bytes_to_send;
-    buffer[0]=0x01; //VERSION
-    if(user->credentials){
-        buffer[1]=0x02; //NMETODS
-        buffer[2]=0x00; //NO AUTHENTICATION REQUIRED
-        buffer[3]=0x02; //USERNAME/PASSWORD
-        bytes_to_send=4;
-    }else{
-        buffer[1]=0x01; //NMETODS
-        buffer[2]=0x00; //NO AUTHENTICATION REQUIRED
-        bytes_to_send=3;
-    }
-
-    return send(sockfd, buffer, bytes_to_send,0);
-}
-
-
-uint8_t handshake_response(int sockfd){
-    uint8_t buff[2];
-    int rec=recv(sockfd, buff, 2, 0);
-    if(rec != 2) {
-        printf("Error handshake_response\n");
-        return 0xFF;
-    }
-    //printf("%x", buff[1]);
-    return buff[1];
-}
-
-
 int send_credentials(int sockfd, struct user* user){
     uint8_t buffer[510];
     int i = 0;
@@ -55,7 +24,6 @@ int send_credentials(int sockfd, struct user* user){
     int passlen= strlen(user->password);
     buffer[i++ + userlen]=passlen;
     strcpy((char*)buffer +  i + userlen, user->password);
-
     return send(sockfd, buffer, userlen + passlen + i,0);
 }
 
@@ -63,7 +31,7 @@ uint8_t credentials_response(int sockfd){
     uint8_t buffer[2];
     int rec=recv(sockfd, buffer, 2, 0);
     if(rec != 2) {
-        printf("Error credentials_response\n");
+        fprintf(stderr,"Error: credentials_response failed\n");
         return 0xFF;
     }
     return buffer[1];
@@ -73,8 +41,6 @@ uint8_t credentials_response(int sockfd){
 int add_user(uint8_t* buffer){
     uint8_t username[255];
     uint8_t password[255];
-
-
     printf("Enter new username: ");
     scanf("%s",username);
     int nusername= strlen((char*)username);
@@ -85,7 +51,6 @@ int add_user(uint8_t* buffer){
     strcpy((char*)buffer+2,(char*) username);
     buffer[nusername+2]=npassword;
     strcpy((char*)buffer+ nusername+ 3,(char*) password);
-
     return nusername+npassword+3;
 }
 
@@ -115,10 +80,12 @@ int disable_enable(uint8_t* buffer, char* print_string){
 
     if (strcmp((char*)on_off, "on")==0){
         buffer[1]=0x00;
-    }else if(strcmp((char*)on_off, "off")==0){
+    }
+    else if(strcmp((char*)on_off, "off")==0){
         buffer[1]=0x01;
-    }else {
-        printf("Invalid option\n");
+    }
+    else {
+        fprintf(stderr,"Invalid option\n");
         return -1;
     }
     return 2;
@@ -227,13 +194,13 @@ int request_response(int sockfd, int req_index){
     if(buffer[0]!=0x00){
         switch (buffer[0]) {
             case mng_status_index_not_supported:
-                printf("Index not supported\n");
+                fprintf(stderr,"Index not supported\n");
                 break;
             case mng_status_server_error:
-                printf("Server error\n");
+                fprintf(stderr,"Server error\n");
                 break;
             case mng_status_max_users_reached:
-                printf("Max users reached\n");
+                fprintf(stderr,"Max users reached\n");
                 break;
         }
         return -1;

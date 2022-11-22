@@ -7,8 +7,7 @@
 
 /*https://www.rfc-editor.org/rfc/rfc1928*/
 
-void hello_parser_init(struct hello_parser *p)
-{
+void hello_parser_init(struct hello_parser *p) {
     p->state = hello_version;
     p->remaining = 0;
 }
@@ -120,11 +119,11 @@ static void on_hello_method(void *p, const uint8_t method) {
     }
 }
 
-/** inicializa las variables de los estados HELLO_st */
+/** Initialize the variables belonging to the HELLO state */
 void hello_read_init(const unsigned state, struct selector_key *key) {
     struct hello_st *d = &ATTACHMENT(key)->client.hello;
-    d->rb                              = &(ATTACHMENT(key)->read_buffer);
-    d->wb                              = &(ATTACHMENT(key)->write_buffer);
+    d->rb = &(ATTACHMENT(key)->read_buffer);
+    d->wb = &(ATTACHMENT(key)->write_buffer);
     d->method = 0xFF;
     d->parser = malloc(sizeof(*(d->parser)));
     d->status=HELLO_SUCCESS;

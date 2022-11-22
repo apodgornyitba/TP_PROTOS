@@ -12,6 +12,7 @@ extern struct users users[MAX_USERS];
 extern int nusers;
 
 struct socks5args {
+    //server 
     char * socks_addr;
     char * socks_addr_6;
     unsigned short socks_port;
@@ -19,6 +20,7 @@ struct socks5args {
     struct sockaddr_in  socks_addr_info;
     struct sockaddr_in6 socks_addr_info_6;
 
+    //mng
     char * mng_addr;
     char * mng_addr_6;
     unsigned short mng_port;
@@ -26,12 +28,15 @@ struct socks5args {
     struct sockaddr_in  mng_addr_info;
     struct sockaddr_in6 mng_addr_info_6;
 
+    //buffer
     uint16_t buffer_size, mng_buffer_size;
 
+    //server config
     uint8_t disectors_enabled;
+    // uint8_t auth_enabled;
 
+    //user config
     char * credentials;
-
 };
 
 /* Interpreta la linea de comandos (argc, argv) llenando

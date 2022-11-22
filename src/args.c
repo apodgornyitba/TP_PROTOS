@@ -19,7 +19,7 @@ static int port(const char *s) {
     if (end == s|| '\0' != *end
         || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno)
         || sl < 0 || sl > USHRT_MAX) {
-        fprintf(stderr, "port should in in the range of 1-65536: %s\n", s);
+        fprintf(stderr, "Port should in the range of 1-65536: %s\n", s);
         return -1;
     }
     return (unsigned short)sl;
@@ -40,36 +40,31 @@ static long buffer_size(const char *s) {
 static int user(char *s, struct users *user) {
     char *p = strchr(s, ':');
     if(p == NULL) {
-        fprintf(stderr, "password not found\n");
+        fprintf(stderr, "Password not found\n");
         return -1;
     } else {
         *p = 0;
         p++;
-        //nuevo
-        char * newUsername = malloc(strlen(s) + 1);
-        char * newPassword = malloc(strlen(p) + 1);
-        strcpy(newUsername, (char *)s);
-        strcpy(newPassword, (char *)p);
-        user->name = newUsername;
-        user->pass = newPassword;
+        user->name = s;
+        user->pass = p;
     }
     return 0;
 }
 
 static void version(void) {
-    fprintf(stderr, "socks5v version 0.0\n ITBA Protocolos de Comunicación 2022/2 -- Grupo 5\n");
+    fprintf(stderr, "socks5v version 1.0\n ITBA Protocolos de Comunicación 2022/2 -- Grupo 5\n");
 }
 
 static int usage(const char *progname) {
     fprintf(stderr,
             "Usage: %s [OPTION]...\n"
-            "\n"
             "   -h               Imprime la ayuda y termina.\n"
-            "   -l <SOCKS addr>  Dirección donde servirÃ¡ el proxy SOCKS.\n"
+            "   -l <SOCKS addr>  Direccion donde servira el proxy SOCKS.\n"
             "   -N               Deshabilita los passwords disectors.\n"
-            "   -L <conf  addr>  Dirección donde servirÃ¡ el servicio de management.\n"
+            "   -L <conf  addr>  Dirección donde servira el servicio de management.\n"
             "   -p <SOCKS port>  Puerto entrante conexiones SOCKS.\n"
             "   -P <conf port>   Puerto entrante conexiones configuracion\n"
+            "   -f <file>        Especifica el archivo donde se obtendrán las credenciales\n"
             "   -u <name>:<pass> Usuario y contraseña de usuario que puede usar el proxy. Hasta 10.\n"
             "   -v               Imprime información sobre la versión y termina.\n"
             "\n", progname);
@@ -77,8 +72,9 @@ static int usage(const char *progname) {
 }
 
 int parse_args(const int argc, char * const *argv, struct socks5args * args) {
-    memset(args, 0, sizeof(*args)); // sobre todo para setear en null los punteros de users
-    // Default values
+    memset(args, 0, sizeof(*args)); 
+    
+    // Default values for socks
     args->socks_addr = "0.0.0.0";
     args->socks_addr_6 = "::";
     args->socks_port = 1080;
@@ -86,9 +82,11 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
     memset(&args->socks_addr_info, 0, sizeof(args->socks_addr_info));
     memset(&args->socks_addr_info_6, 0, sizeof(args->socks_addr_info_6));
 
+    // Default values for buffers
     args->buffer_size = DEFAULT_BUFFER_SIZE;
     args->mng_buffer_size = DEFAULT_BUFFER_SIZE;
     
+    // Default values for management
     args->mng_addr = "127.0.0.1";
     args->mng_addr_6 = "::1";
     args->mng_port = 8080;
@@ -114,7 +112,7 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
             case 'l':
                 args->socks_family = address_processing(optarg, &args->socks_addr_info, &args->socks_addr_info_6, args->socks_port);
                 if(args->socks_family == -1){
-                    printf("Unable to resolve address type. Please, enter a valid address.\n");
+                    fprintf(stderr,"Unable to resolve address type. Please, enter a valid address.\n");
                     return -1;
                 }
                 if(args->socks_family == AF_INET) {
@@ -127,7 +125,7 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
             case 'L':
                 args->mng_family = address_processing(optarg, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
                 if(args->mng_family == -1){
-                    printf("Unable to resolve address type. Please, enter a valid address.\n");
+                    fprintf(stderr,"Unable to resolve address type. Please, enter a valid address.\n");
                     return -1;
                 }
                 if(args->mng_family == AF_INET) {
@@ -190,24 +188,24 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
     if(args->socks_family == AF_UNSPEC){
         aux = address_processing(args->socks_addr, &args->socks_addr_info, &args->socks_addr_info_6, args->socks_port);
         if(aux == -1){
-            printf("Error processing default IPv4 address for proxy SOCKS.\n");
+            fprintf(stderr,"Error processing default IPv4 address for proxy SOCKS.\n");
             return -1;
         }
         aux = address_processing(args->socks_addr_6, &args->socks_addr_info, &args->socks_addr_info_6, args->socks_port);
         if(aux == -1){
-            printf("Error processing default IPv6 address for proxy SOCKS.\n");
+            fprintf(stderr,"Error processing default IPv6 address for proxy SOCKS.\n");
             return -1;
         }
     }
     if(args->mng_family == AF_UNSPEC){
         aux = address_processing(args->mng_addr, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
         if(aux == -1){
-            printf("Error processing default IPv4 address for mng.\n");
+            fprintf(stderr,"Error processing default IPv4 address for mng.\n");
             return -1;
         }
         aux = address_processing(args->mng_addr_6, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
         if(aux == -1){
-            printf("Error processing default IPv6 address for mng.\n");
+            fprintf(stderr,"Error processing default IPv6 address for mng.\n");
             return -1;
         }
     }

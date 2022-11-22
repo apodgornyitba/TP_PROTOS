@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include "../include/password_parser.h"
 
-fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
-{
+fd_interest copy_compute_interests(fd_selector s, struct copy_st *d) {
     fd_interest ret = OP_NOOP;
 
     if(d->fd != -1)
@@ -28,8 +27,8 @@ fd_interest copy_compute_interests(fd_selector s, struct copy_st *d)
 extern uint8_t password_dissectors;
 
 void copy_init(const unsigned int state, struct selector_key *key) {
-
     struct copy_st *d = &ATTACHMENT(key)->client.copy;
+    
     d->fd = ATTACHMENT(key)->client_fd;
     d->rb = &ATTACHMENT(key)->read_buffer;
     d->wb = &ATTACHMENT(key)->write_buffer;
