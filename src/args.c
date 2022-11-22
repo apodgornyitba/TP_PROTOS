@@ -19,7 +19,7 @@ static int port(const char *s) {
     if (end == s|| '\0' != *end
         || ((LONG_MIN == sl || LONG_MAX == sl) && ERANGE == errno)
         || sl < 0 || sl > USHRT_MAX) {
-        fprintf(stderr, "port should in in the range of 1-65536: %s\n", s);
+        fprintf(stderr, "Port should in the range of 1-65536: %s\n", s);
         return -1;
     }
     return (unsigned short)sl;
@@ -40,18 +40,13 @@ static long buffer_size(const char *s) {
 static int user(char *s, struct users *user) {
     char *p = strchr(s, ':');
     if(p == NULL) {
-        fprintf(stderr, "password not found\n");
+        fprintf(stderr, "Password not found\n");
         return -1;
     } else {
         *p = 0;
         p++;
-        //nuevo
-        char * newUsername = malloc(strlen(s) + 1);
-        char * newPassword = malloc(strlen(p) + 1);
-        strcpy(newUsername, (char *)s);
-        strcpy(newPassword, (char *)p);
-        user->name = newUsername;
-        user->pass = newPassword;
+        user->name = s;
+        user->pass = p;
     }
     return 0;
 }
@@ -70,6 +65,7 @@ static int usage(const char *progname) {
             "   -L <conf  addr>  Dirección donde servirÃ¡ el servicio de management.\n"
             "   -p <SOCKS port>  Puerto entrante conexiones SOCKS.\n"
             "   -P <conf port>   Puerto entrante conexiones configuracion\n"
+            "   -f <file>        Especifica el archivo donde se obtendrán las credenciales"
             "   -u <name>:<pass> Usuario y contraseña de usuario que puede usar el proxy. Hasta 10.\n"
             "   -v               Imprime información sobre la versión y termina.\n"
             "\n", progname);

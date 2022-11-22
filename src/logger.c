@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Modificaciones realizadas sobre codigo provisto por la cátedra */
 
 #include "../include/logger.h"
 
