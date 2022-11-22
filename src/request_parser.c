@@ -1,5 +1,4 @@
 #include "../include/request_parser.h"
-#include "../include/debug.h"
 #include "../include/request.h"
 #include <string.h>
 #include <netinet/in.h>
@@ -43,69 +42,55 @@ void request_parser_close(struct request_parser *parser) {
 }
 
 enum request_state request_parser_feed(struct request_parser *parser, uint8_t b) {
-    char *label = "REQUEST PARSER FEED";
-    debug(label, 0, "Starting stage", 0);
 
     enum request_state following_state = request_error;
     switch (parser->state) {
 
         case request_version:
-            debug(label, b, "Reading version", 0);
             following_state = version(b);
             break;
 
         case request_cmd:
-            debug(label, b, "Reading command", 0);
             following_state = cmd(parser, b);
             break;
 
         case request_rsv:
-            debug(label, b, "Reserved space", 0);
             following_state = request_atyp; //ignoro el campo rsv ya que siempre es '00'
             break;
 
         case request_atyp:
-            debug(label, b, "Reading address type", 0);
             following_state = address_type(parser, b);
             break;
 
         case request_dest_addr:
-            debug(label, b, "Reading address", 0);
             following_state = dest_addr(parser, b);
             break;
 
         case request_dest_addr_fqdn:
-            debug(label, b, "Reading FQDN size", 0);
             following_state = dest_address_fqdn(parser, b);
             break;
 
         case request_dest_port:
-            debug(label, b, "Reading port", 0);
             following_state = dest_port(parser, b);
             break;
 
         case request_done:
-            debug(label, b, "Done parsing", 0);
             following_state = request_done;
             break;
 
         case request_error_unsupported_version:
-            debug(label, b, "request_error_unsupported_version", 0);
             following_state = request_error_unsupported_version;
             break;
 
         case request_error_unsupported_cmd:
-            debug(label, b, "request_error_unsupported_cmd", 0);
             following_state = request_error_unsupported_cmd;
             break;
 
         case request_error_unsupported_type:
-            debug(label, b, "request_error_unsupported_type", 0);
             following_state = request_error_unsupported_type;
             break;
 
         case request_error:
-            debug(label, b, "request_error", 0);
             following_state = request_error;
             break;
     }

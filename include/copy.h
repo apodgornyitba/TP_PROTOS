@@ -3,7 +3,6 @@
 
 #include "selector.h"
 #include "socks5nio.h"
-#include "debug.h"
 #include <assert.h>
 #include <sys/types.h>
 #include <sys/socket.h>

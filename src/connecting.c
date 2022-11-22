@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <string.h>
+#include <stdio.h>
 #include "../include/connecting.h"
 #include "../include/request.h"
 #include "netutils.h"
@@ -14,8 +15,6 @@ enum socks_reply_status connection(struct selector_key *key);
 enum socks_reply_status errno_to_socks(int e);
 
 void connecting_init(const unsigned state, struct selector_key *key){
-    char * label = "CONNECTION_INIT";
-    debug(label, 0, "Starting stage", key->fd);
     struct socks5 * data = ATTACHMENT(key);
     data->orig.conn.wb = &data->write_buffer;
     data->orig.conn.client_fd = data->client_fd;
@@ -24,21 +23,17 @@ void connecting_init(const unsigned state, struct selector_key *key){
 
     int *fd= &data->origin_fd;
 
-    debug(label, 0, "Creating socket", key->fd);
     *fd= socket(ATTACHMENT(key)->origin_domain, SOCK_STREAM, 0);
 
     if(*fd < 0){
-        debug(label, *fd, "Error creating socket for origin", key->fd);
         data->orig.conn.status=status_general_socks_server_failure;
         error_handler_to_client(data->orig.conn.status, key);
         return;
-    }else
-        debug(label, *fd, "Created socket for origin", key->fd);
+    }
 
     //// Socket no bloqueante
     int flag_setting = selector_fd_set_nio(*fd);
     if(flag_setting == -1) {
-        debug(label, flag_setting, "Error setting socket flags", key->fd);
         data->orig.conn.status=status_general_socks_server_failure;
         error_handler_to_client(data->orig.conn.status, key);
         return;
@@ -54,12 +49,9 @@ extern size_t metrics_max_concurrent_connections;
 
 unsigned connecting_write(struct selector_key *key){
     struct socks5 * data = ATTACHMENT(key);
-    char * label = "CONNECTING WRITE";
     if(data->orig.conn.status != status_succeeded){
-        debug(label, 0, "status != succeeded from init", key->fd);
         if(data->origin_resolution_current != NULL && data->origin_resolution_current->ai_next != NULL){
 
-            debug(label, 0, "Checking next IP", key->fd);
             struct addrinfo * current = data->origin_resolution_current = data->origin_resolution_current->ai_next;
 
             //// IPv4
@@ -86,13 +78,11 @@ unsigned connecting_write(struct selector_key *key){
     char * orig = malloc(MAX_IP_LENGTH);
     char * client = malloc(MAX_IP_LENGTH);
 
-    debug(label, 0, "Starting stage", key->fd);
 
     int error;
     socklen_t len= sizeof(error);
 
     if(getsockopt(key->fd, SOL_SOCKET, SO_ERROR, &error, &len) < 0){
-        debug(label, 0, "Error on getsockopt -> REQUEST_WRITE to reply error to client", key->fd);
         data->orig.conn.status=status_general_socks_server_failure;
        time_t now;
         time(&now);
@@ -112,7 +102,6 @@ unsigned connecting_write(struct selector_key *key){
         time(&now);
         char buf[sizeof "2011-10-08T07:07:09Z"];
         strftime(buf, sizeof buf, "%FT%TZ", gmtime(&now));
-        debug(label, 0, "Connection succeed", key->fd);
         printf("%s\t%s\tRegister A\t to: %s \t from: %s\t status: %d\n", buf, users[ATTACHMENT(key)->userIndex].name, sockaddr_to_human(orig, MAX_IP_LENGTH, origAddr), sockaddr_to_human(client, MAX_IP_LENGTH, clientAddr), data->orig.conn.status);
         if(data->client.request.addr_family == socks_req_addrtype_domain)
             freeaddrinfo(data->origin_resolution);
@@ -121,7 +110,6 @@ unsigned connecting_write(struct selector_key *key){
     }
     else{
         if(data->origin_resolution_current==NULL){
-            debug(label, 0, "Connection refused -> REQUEST_WRITE to reply error to client", key->fd);
             data->orig.conn.status= errno_to_socks(error);
             time_t now;
             time(&now);
@@ -131,12 +119,10 @@ unsigned connecting_write(struct selector_key *key){
             return error_handler_to_client(data->orig.conn.status, key);
         }
 
-        debug(label, 0, "Connection failed. Checking other IPs", key->fd);
         data->orig.conn.status = errno_to_socks(error);
 
         if(data->origin_resolution_current != NULL && data->origin_resolution_current->ai_next != NULL){
 
-            debug(label, 0, "Checking next IP", key->fd);
             struct addrinfo * current = data->origin_resolution_current = data->origin_resolution_current->ai_next;
 
             //// IPv4
@@ -151,7 +137,6 @@ unsigned connecting_write(struct selector_key *key){
             return REQUEST_CONNECTING;
 
         } else{
-            debug(label, 0, "No more IPs -> REQUEST_WRITE to reply error to client", key->fd);
             data->orig.conn.status=errno_to_socks(error);
             time_t now;
             time(&now);
@@ -166,27 +151,22 @@ unsigned connecting_write(struct selector_key *key){
 
     int request_marshall_result = request_marshall(data->orig.conn.status, &data->write_buffer);
     if(request_marshall_result == -1){
-        debug(label, request_marshall_result, "Error request marshall", key->fd);
         return ERROR;
     }
 
     selector_status s=0;
     s|= selector_set_interest(key->s, data->orig.conn.client_fd, OP_WRITE);
     s|= selector_set_interest_key(key, OP_NOOP);
-    debug(label, s, "Finished stage", key->fd);
     return SELECTOR_SUCCESS == s ? REQUEST_WRITE:ERROR;
 }
 
 //// CLOSE
 void connecting_close(const unsigned state, struct selector_key *key){
-    char * label = "CONNECTING CLOSE";
-    debug(label, 0, "Starting stage", key->fd);
     struct request_st *d = &ATTACHMENT(key)->client.request;
     if(d->parser != NULL) {
         request_parser_close(d->parser);
         free(d->parser);
     }
-    debug(label, 0, "Finished stage", key->fd);
 }
 
 
@@ -220,11 +200,8 @@ enum socks_reply_status errno_to_socks(int e){
 
 extern size_t metrics_historic_connections_attempts;
 enum socks_reply_status connection(struct selector_key *key){
-    char * label = "CONNECTION";
-    debug(label, 0, "Starting stage", key->fd);
     struct socks5 * data = ATTACHMENT(key);
 
-    debug(label, 0, "Connecting socket to origin", key->fd);
     int *fd= &data->origin_fd;
 
     metrics_historic_connections_attempts += 1;
@@ -232,7 +209,6 @@ enum socks_reply_status connection(struct selector_key *key){
     int connectResult = connect(*fd, (const struct sockaddr*)&ATTACHMENT(key)->origin_addr, ATTACHMENT(key)->origin_addr_len);
 
     if(connectResult != 0 && errno != EINPROGRESS){
-        debug(label, connectResult, "Connection for origin socket failed", key->fd);
         data->client.request.status = errno_to_socks(errno);
         data->orig.conn.status=errno_to_socks(errno);
         error_handler_to_client(data->orig.conn.status, key);
@@ -242,16 +218,13 @@ enum socks_reply_status connection(struct selector_key *key){
     if(connectResult != 0){
         selector_status st= selector_set_interest_key(key, OP_NOOP);
         if(SELECTOR_SUCCESS != st){
-            debug(label, st, "Error setting interest", key->fd);
             data->orig.conn.status=status_general_socks_server_failure;
             error_handler_to_client(data->orig.conn.status, key);
             return data->orig.conn.status;
         }
 
-        debug(label, connectResult, "Me suscribo a escritura para esperar que se complete la conexión", key->fd);
         st= selector_register(key->s, *fd, &socks5_handler,OP_WRITE, key->data);
         if(SELECTOR_SUCCESS != st){
-            debug(label, st, "Error setting interest", key->fd);
             data->orig.conn.status=status_general_socks_server_failure;
             error_handler_to_client(data->orig.conn.status, key);
             close((*fd));
@@ -264,16 +237,13 @@ enum socks_reply_status connection(struct selector_key *key){
         ATTACHMENT(key)->references += 1;           
         selector_status st= selector_set_interest_key(key, OP_READ);
         if(SELECTOR_SUCCESS != st){
-            debug(label, st, "Error setting interest", key->fd);
             data->orig.conn.status=status_general_socks_server_failure;
             error_handler_to_client(data->orig.conn.status, key);
             return data->orig.conn.status;
         }
 
-        debug(label, connectResult, "Me suscribo a escritura para esperar que se complete la conexión", key->fd);
         st= selector_register(key->s, *fd, &socks5_handler,OP_READ, key->data);
         if(SELECTOR_SUCCESS != st){
-            debug(label, st, "Error setting interest", key->fd);
             data->orig.conn.status=status_general_socks_server_failure;
             error_handler_to_client(data->orig.conn.status, key);
             return data->orig.conn.status;
@@ -281,7 +251,6 @@ enum socks_reply_status connection(struct selector_key *key){
     }
 
 
-    debug(label, 0, "Finished stage", key->fd);
     return status_succeeded;
    
 }

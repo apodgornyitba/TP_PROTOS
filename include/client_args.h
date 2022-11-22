@@ -22,7 +22,6 @@ struct management_args{
     char * file_path;
     bool append;
 
-    bool debug;
 };
 
 int parse_args(const int argc, char *const * argv, struct management_args *args);

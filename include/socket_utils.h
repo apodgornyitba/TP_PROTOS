@@ -6,7 +6,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <stdio.h>
-#include "../include/debug.h"
 #include "../include/selector.h"
 /**
  * Creates socket, binds, listens and sets it as NON-BLOCKING

@@ -4,7 +4,6 @@
 #include <string.h>    /* memset */
 #include <errno.h>
 #include <getopt.h>
-#include "../include/debug.h"
 #include "../include/address_utils.h"
 #include "../include/client_args.h"
 #include <stdbool.h>
@@ -53,16 +52,17 @@ int parse_args(const int argc, char *const * argv, struct management_args *args)
         int option_index = 0;
 
         c = getopt_long(argc, argv, "dD:L:P:u:f:", NULL, &option_index);
+        //c = getopt_long(argc, argv, "dD:L:P:u:f:", NULL, &option_index);
         if (c == -1)
             break;
 
         switch (c) {
-            case 'd':
-                args->debug = STDOUT_DEBUG;
-                break;
-            case 'D':
-                args->debug = FILE_DEBUG;
-                break;
+            //case 'd':
+            //    args->debug = STDOUT_DEBUG;
+            //    break;
+            //case 'D':
+            //    args->debug = FILE_DEBUG;
+            //    break;
             case 'L':
                 args->mng_family = address_processing(optarg, &args->mng_addr_info, &args->mng_addr_info_6, args->mng_port);
                 if(args->mng_family == -1){

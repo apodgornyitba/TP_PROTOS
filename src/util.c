@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Marcelo Garberoglio) */
 
 #include <netdb.h>
 #include <stdio.h>

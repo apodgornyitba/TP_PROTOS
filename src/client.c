@@ -9,7 +9,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include "../include/client_args.h"
-#include "../include/debug.h"
 #include "../include/client_utils.h"
 
 FILE * append_file;
@@ -40,32 +39,20 @@ int main(const int argc, const char **argv)
         }
     } else append_file = NULL;
 
-    int debug_option = args->debug;
-    debug_init(debug_option);
 
     int sockfd;
 
     switch (args->mng_family) {
         case AF_UNSPEC:{
             sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
-            if (sockfd < 0) {
-                debug("MANAGEMENT CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
-            }
             if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
-                debug("MANAGEMENT CLIENT FATAL", 0, "ipv4 connect() failed",0);
-                debug("MANAGEMENT CLIENT FATAL", 0, strerror(errno),0);
                 goto end;
             }
             break;
         }
         case AF_INET:{
             sockfd= socket(AF_INET, SOCK_STREAM,IPPROTO_TCP);
-            if (sockfd < 0) {
-                debug("MANAGEMENT CLIENT FATAL", sockfd, "ipv4 socket() failed",0);
-            }
             if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info, sizeof(struct sockaddr)) < 0) {
-                debug("MANAGEMENT CLIENT FATAL", 0, "ipv4 connect() failed",0);
-                debug("MANAGEMENT CLIENT FATAL", 0, strerror(errno),0);
                 goto end;
             }
             break;
@@ -73,11 +60,8 @@ int main(const int argc, const char **argv)
         case AF_INET6:{
             sockfd= socket(AF_INET6, SOCK_STREAM,IPPROTO_TCP);
             if (sockfd < 0) {
-                debug("MANAGEMENT CLIENT FATAL", sockfd, "ipv6 socket() failed",0);
             }
             if (connect(sockfd,(const struct sockaddr*) &args->mng_addr_info_6, sizeof(struct sockaddr_in6)) < 0) {
-                debug("MANAGEMENT CLIENT FATAL", 0, "ipv6 connect() failed",0);
-                debug("MANAGEMENT CLIENT FATAL", 0, strerror(errno),0);
                 goto end;
             }
             break;

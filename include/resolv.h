@@ -1,7 +1,6 @@
 #ifndef PROTOS_RESOLV_H
 #define PROTOS_RESOLV_H
 
-#include "debug.h"
 #include <netdb.h>
 #include <pthread.h>
 #include <netinet/in.h>

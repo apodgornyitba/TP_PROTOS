@@ -1,8 +1,8 @@
 #include "../include/password_parser.h"
 #include <stdlib.h>
-#include <printf.h>
+#include <stdio.h>
 #include "../include/socks5nio.h"
-#include "../include/debug.h"
+// #include "../include/debug.h"
 #include <sys/socket.h>
 #include <netutils.h>
 #include <time.h>
@@ -82,7 +82,6 @@ enum password_parser_state user_read_reset(struct password_parser *p, uint8_t b)
 }
 
 enum password_parser_state user_read_handler(struct password_parser *p, uint8_t b) {
-    char *label = "DISSEC USER READ";
     if (p->current_index >= 255)
         return user_read_reset(p, b);
 
@@ -97,7 +96,6 @@ enum password_parser_state user_read_handler(struct password_parser *p, uint8_t 
     if (b == 0x0A) {
         p->username = checkSize(p->username, p->current_index);
         p->username[p->current_index] = 0;
-        debug(label, (int) p->current_index, (char *) p->username, 0);
         p->current_index = 0;
         p->last = false;
         return pass_word_search;
@@ -124,7 +122,6 @@ enum password_parser_state pass_read_reset(struct password_parser *p, uint8_t b)
 }
 
 enum password_parser_state pass_read_handler(struct password_parser *p, uint8_t b) {
-    char *label = "DISSEC PASS READ";
     if (p->current_index >= 255)
         return pass_read_reset(p, b);
     if (p->last && b != 0x0A) {
@@ -152,7 +149,6 @@ enum password_parser_state pass_read_handler(struct password_parser *p, uint8_t 
                p->username, p->password);
         free(orig);
         free(client);
-        debug(label, (int) p->current_index, (char *) p->password, 0);
         return pass_read_reset(p, b);
     }
 
