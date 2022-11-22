@@ -13,7 +13,7 @@ int address_processing(char * address, struct sockaddr_in * addr, struct sockadd
 
     ret = getaddrinfo(address, NULL, &hint, &res);
     if(ret) {
-        printf("Invalid address");
+        fprintf(stderr,"Invalid address");
         return -1;
     }
     // IPv4
@@ -30,7 +30,7 @@ int address_processing(char * address, struct sockaddr_in * addr, struct sockadd
         return AF_INET6;
     } 
     else {
-        printf("%s is an unknown address format %d\n",address,res->ai_family);
+        fprintf(stderr,"%s is an unknown address format %d\n",address,res->ai_family);
     }
 
    freeaddrinfo(res);
