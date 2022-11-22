@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Juan Codagnone) */
 
 #ifndef BUFFER_H_VelRDAxzvnuFmwEaR0ftrkIinkT
 #define BUFFER_H_VelRDAxzvnuFmwEaR0ftrkIinkT

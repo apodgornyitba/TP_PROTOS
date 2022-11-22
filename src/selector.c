@@ -1,5 +1,5 @@
 /* selector.c - un muliplexor de entrada salida */
- /* Codigo provisto por la cátedra */
+ /* Codigo provisto por la cátedra (Juan Codagnone) */
 
 #include <stdio.h>  // perror
 #include <stdlib.h> // malloc

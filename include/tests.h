@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Juan Codagnone) */
 
 #ifndef TEST_H_8VyRIy8mLICCGx62mh19ScMWpkI
 #define TEST_H_8VyRIy8mLICCGx62mh19ScMWpkI

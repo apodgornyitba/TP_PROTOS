@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Juan Codagnone) */
 /* MODIFICADO */
 
 #ifndef ARGS_H_kFlmYm1tW9p5npzDr2opQJ9jM8

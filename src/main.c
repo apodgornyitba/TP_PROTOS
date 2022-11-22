@@ -4,7 +4,7 @@
  * Se descargarÃ¡ en otro hilos las operaciones bloqueantes (resoluciÃ³n de
  * DNS utilizando getaddrinfo), pero toda esa complejidad estÃ¡ oculta en
  * el selector. */
- /* Codigo provisto por la cátedra */
+ /* Codigo provisto por la cátedra (Juan Codagnone) */
  /* MODIFICADO */
  
 #include <stdio.h>
@@ -24,7 +24,6 @@
 #include "../include/selector.h"
 #include "../include/socks5nio.h"
 #include "../include/args.h"
-#include "../include/management.h"
 
 #define CREDENTIALS "../credentials.txt"
 #define SELECTOR_INITIAL_ELEMENTS 1024
@@ -34,6 +33,8 @@ uint8_t auth_method = DEFAULT_AUTH_METHOD;
 #define DEFAULT_PASSWORD_DISSECTORS_MODE 0
 uint8_t password_dissectors = DEFAULT_PASSWORD_DISSECTORS_MODE;
 
+//-------------------Metrics---------------------
+//-----------------------------------------------
 size_t metrics_historic_connections = 0;
 size_t metrics_concurrent_connections = 0;
 size_t metrics_max_concurrent_connections = 0;
@@ -46,6 +47,7 @@ size_t metrics_average_bytes_per_read = 0;
 
 size_t total_writes = 0;
 size_t metrics_average_bytes_per_write = 0;
+//-----------------------------------------------
 
 static void sigterm_handler(const int signal) {
     printf("Signal %d, cleaning up and exiting\n",signal);

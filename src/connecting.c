@@ -97,7 +97,6 @@ unsigned connecting_write(struct selector_key *key){
         metrics_concurrent_connections += 1;
         if(metrics_concurrent_connections > metrics_max_concurrent_connections)
             metrics_max_concurrent_connections = metrics_concurrent_connections;
-        
         time_t now;
         time(&now);
         char buf[sizeof "2011-10-08T07:07:09Z"];

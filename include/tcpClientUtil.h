@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Marcelo Gaberoglio) */
 
 #ifndef TCPCLIENT_H_
 #define TCPCLIENT_H_
