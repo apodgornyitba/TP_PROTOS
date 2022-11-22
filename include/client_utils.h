@@ -4,9 +4,6 @@
 #include <stdint.h>
 #include "client_args.h"
 
-int handshake(int sockfd, struct user* user);
-
-uint8_t handshake_response(int sockfd);
 
 int send_credentials(int sockfd, struct user* user);
 

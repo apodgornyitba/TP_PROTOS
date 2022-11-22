@@ -6,14 +6,14 @@
 .RE
 ..
 
-.TH socks5d 0.0.0 "25 de octubre 2022"
+.TH MASS 0.0.0 "25 de octubre 2022"
 .LO 8
 .SH NAME
-socks5d \- proxy SOCKS versión 5 con esteroides
+MASS \- cliente para protocolo MASS
 
 .SH SINOPSIS
 .HP 10
-.B  socks5d
+.B  client
 [ POSIX style options ]
 
 .SH OPCIONES
@@ -30,38 +30,21 @@ socks5d \- proxy SOCKS versión 5 con esteroides
 .\".IP
 .\"La configuración predeterminada consiste en tener apagada las transformaciones.
 
-.IP "\fB-h\fR"
-Imprime la ayuda y termina.
-
-.IP "\fB\-l\fB \fI<dirección-socks>\fR"
-Establece la dirección donde servirá el proxy SOCKS.
-Por defecto escucha en todas las interfaces. 
-
-.IP "\fB\-L\fB \fI<dirección-de-management>\fR"
+.IP "\fB\-L\fB \fIdirección-de-management\fR"
 Establece la dirección donde servirá el servicio de
 management. Por defecto escucha únicamente en loopback.
 
-.IP "\fB\-N\fB"
-Deshabilita los passwords disectors.
-
-.IP "\fB\-p\fB \fI<puerto-local>\fR"
-Puerto TCP donde escuchará por conexiones entrantes SOCKS.
-Por defecto el valor es \fI1080\fR.
-
-.IP "\fB\-P\fB \fI<puerto-conf>\fR"
+.IP "\fB\-P\fB \fIpuerto-conf\fR"
 Puerto SCTP  donde escuchará por conexiones entrante del protocolo
 de configuración. Por defecto el valor es \fI8080\fR.
 
-.IP "\fB\-f\fB \fI<credentials_file>\fR"
+.IP "\fB\-u\fB \fIuser:pass\fR"
 Declara un usuario del proxy con su contraseña. Se puede utilizar
 hasta 10 veces.
 
-.IP "\fB\-u\fB \fI<user:pass>\fR"
-Declara un usuario del proxy con su contraseña. Se puede utilizar
-hasta 10 veces.
-
-.IP "\fB\-v\fB"
-Imprime información sobre la versión versión y termina.
+.IP "\fB\-f\fB \fI<stadistics_file>\fR"
+Las estadísticas obtenidas del servidor se van a escribir separadas por un espacio al final.
+Solo funciona con los indices del 2 al 9.
 
 .SH REGISTRO DE ACCESO
 
@@ -98,6 +81,7 @@ Ejemplo 443.
 .IP "\fBstatus\fR" status SOCKS (0 exito, ...)
 Status code de SOCKSv5. Ejemplo 0.
 
+
 .SH REGISTRO DE PASSWORDS
 
 Registra las credenciales descubiertas en salida estandar. Una credencial por línea.
@@ -113,6 +97,7 @@ Ejemplo juan.
 
 .IP "\fBtipo de registro\fR" 
 Siempre el caracter P.
+
 
 .IP "\fBprotocolo\fR"
 Protocolo del que se trata. HTTP o POP3.
