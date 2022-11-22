@@ -71,7 +71,7 @@ void mng_request_index_init(const unsigned state, struct selector_key *key) {
         return;
     }
 
-    //// Read index
+    // Read index
     d->parser->states[0] = malloc(sizeof(parser_substate));
      if(d->parser->states[0]==NULL){
         d->status=mng_status_server_error;
@@ -115,7 +115,8 @@ unsigned mng_request_index_read(struct selector_key *key) {
             return MNG_ERROR;
         return MNG_REQUEST_WRITE;
     }
-    n = recv(key->fd, ptr, 1, 0);       //// Leo solo uno para ver el index
+    // Only read one to check the index
+    n = recv(key->fd, ptr, 1, 0);       
     if (n > 0) {
 
         buffer_write_adv(d->rb, n);
@@ -212,9 +213,9 @@ unsigned mng_request_read(struct selector_key *key) {
     ssize_t n;
 
     ptr = buffer_write_ptr(d->rb, &count);
-    n = recv(key->fd, ptr, count, 0);       //// Leo solo uno para ver el index
+    // Only read one to check the index
+    n = recv(key->fd, ptr, count, 0);      
     if (n > 0) {
-
         buffer_write_adv(d->rb, n);
         const enum parser_state st = consume(d->rb, d->parser, &error);
 
@@ -276,7 +277,8 @@ unsigned mng_request_write(struct selector_key *key) {
     }
 
     buffer_read_adv(d->wb, n);
-    if(!buffer_can_read(d->wb)){        //// So no puedo leer más, termino el estado
+    // Check whether still capable to read
+    if(!buffer_can_read(d->wb)){        
         return MNG_DONE;
     }
 
@@ -286,28 +288,28 @@ unsigned mng_request_write(struct selector_key *key) {
 void mng_request_write_close(unsigned state, struct selector_key * key){
 }
 
-//// Historic connections
+// Historic connections
 extern size_t metrics_historic_connections;
 
-//// Concurrent connections
+// Concurrent connections
 extern size_t metrics_concurrent_connections;
 
-//// Max concurrent connections
+// Max concurrent connections
 extern size_t metrics_max_concurrent_connections;
 
-//// Historic byte transfer
+// Historic byte transfer
 extern size_t metrics_historic_byte_transfer;
 
-//// Historic auth attempts
+// Historic auth attempts
 extern size_t metrics_historic_auth_attempts;
 
-//// Historic connections attempts
+// Historic connections attempts
 extern size_t metrics_historic_connections_attempts;
 
-//// Average bytes per read
+// Average bytes per read
 extern size_t metrics_average_bytes_per_read;
 
-//// Average bytes per write
+// Average bytes per write
 extern size_t metrics_average_bytes_per_write;
 
 void uint_mng_request_marshall(buffer *wb, uint32_t value);
@@ -316,50 +318,50 @@ void supported_indexes_mng_request_marshall(buffer *wb);
 
 enum mng_state process_mng_index(struct selector_key *key, buffer *wb, enum mng_request_indexes index) {
     switch (index) {
-        case mng_request_index_supported_indexes: {                      //// Supported indexes
+        case mng_request_index_supported_indexes: {                      // Supported indexes
             supported_indexes_mng_request_marshall(wb);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_list_users: {                             //// List users
+        case mng_request_index_list_users: {                             // List users
             list_users_mng_request_marshall(wb, key);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_historic_connections: {                   //// Historic connections
+        case mng_request_index_historic_connections: {                   // Historic connections
             uint_mng_request_marshall(wb, metrics_historic_connections);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_concurrent_connections: {                 //// Concurrent connections
+        case mng_request_index_concurrent_connections: {                 // Concurrent connections
             uint_mng_request_marshall(wb, metrics_concurrent_connections);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_max_concurrent_connections: {             //// Max concurrent connections
+        case mng_request_index_max_concurrent_connections: {             // Max concurrent connections
             uint_mng_request_marshall(wb, metrics_max_concurrent_connections);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_historic_bytes_transferred: {             //// Historic byte transfer
+        case mng_request_index_historic_bytes_transferred: {             // Historic byte transfer
             uint_mng_request_marshall(wb, metrics_historic_byte_transfer);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_historic_auth_attempts: {                 //// Historic auth attempts
+        case mng_request_index_historic_auth_attempts: {                 // Historic auth attempts
             uint_mng_request_marshall(wb, metrics_historic_auth_attempts);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_historic_connections_attempts: {          //// Historic connections attempts
+        case mng_request_index_historic_connections_attempts: {          // Historic connections attempts
             uint_mng_request_marshall(wb, metrics_historic_connections_attempts);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_average_bytes_per_read: {                 //// Average bytes per read
+        case mng_request_index_average_bytes_per_read: {                 // Average bytes per read
             uint_mng_request_marshall(wb, metrics_average_bytes_per_read);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_average_bytes_per_write: {                //// Average bytes per write
+        case mng_request_index_average_bytes_per_write: {                // Average bytes per write
             uint_mng_request_marshall(wb, metrics_average_bytes_per_write);
             return MNG_REQUEST_WRITE;
         }
-        case mng_request_index_add_user:                                 //// Add user
-        case mng_request_index_delete_user:                              //// Delete user
-        case mng_request_index_disable_auth:                             //// Disable auth
-        case mng_request_index_disable_password_disectors:               //// Disable password dissectors
+        case mng_request_index_add_user:                                 // Add user
+        case mng_request_index_delete_user:                              // Delete user
+        case mng_request_index_disable_auth:                             // Disable auth
+        case mng_request_index_disable_password_disectors:               // Disable password dissectors
             return MNG_REQUEST_READ;
 
         default: {

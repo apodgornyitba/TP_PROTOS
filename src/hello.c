@@ -1,12 +1,6 @@
 #include "../include/hello.h"
 
-// #ifndef MSG_NOSIGNAL
-// //// For mac compilation only
-// #define MSG_NOSIGNAL 0x2000  /* don't raise SIGPIPE */
-// #endif
-
 /*https://www.rfc-editor.org/rfc/rfc1928*/
-
 void hello_parser_init(struct hello_parser *p) {
     p->state = hello_version;
     p->remaining = 0;

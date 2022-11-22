@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Marcelo Gaberoglio) */
 
 #ifndef UTIL_H_
 #define UTIL_H_

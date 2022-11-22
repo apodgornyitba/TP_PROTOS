@@ -2,31 +2,9 @@
 #include <stdlib.h>
 #include "../include/password_parser.h"
 
-fd_interest copy_compute_interests(fd_selector s, struct copy_st *d) {
-    fd_interest ret = OP_NOOP;
-
-    if(d->fd != -1)
-    {
-        if (((d->interest & OP_READ) && buffer_can_write(d->rb)) )
-        {
-            ret |= OP_READ;
-        }
-        if ((d->interest & OP_WRITE) && buffer_can_read(d->wb) )
-        {
-            ret |= OP_WRITE;
-        }
-        if (SELECTOR_SUCCESS != selector_set_interest(s, d->fd, ret))
-        {
-            abort();
-        }
-    }
-
-    return ret;
-}
-
-extern uint8_t password_dissectors;
-
+// Initialize function
 void copy_init(const unsigned int state, struct selector_key *key) {
+    // Get te copy struct for the client
     struct copy_st *d = &ATTACHMENT(key)->client.copy;
     
     d->fd = ATTACHMENT(key)->client_fd;
@@ -42,10 +20,37 @@ void copy_init(const unsigned int state, struct selector_key *key) {
     d->interest = OP_READ | OP_WRITE;
     d->other_copy = &ATTACHMENT(key)->client.copy;
 
+    // Determine new interests for the selectors
     copy_compute_interests(key->s, d);
     copy_compute_interests(key->s, d->other_copy);
 }
 
+// Determines interest of given copy_st and sets the selector accordingly
+fd_interest copy_compute_interests(fd_selector s, struct copy_st *d) {
+    // Initial interest - no operation
+    fd_interest interest = OP_NOOP;
+
+    if(d->fd != -1) {
+        // If copy_st is interested in reading and buffer has capacity
+        if (((d->interest & OP_READ) && buffer_can_write(d->rb))) {
+            interest |= OP_READ;
+        }
+        // If copy_st is interested in writing and buffer has contents
+        if ((d->interest & OP_WRITE) && buffer_can_read(d->wb)) {
+            intereset |= OP_WRITE;
+        }
+        // Set selector interests
+        if (SELECTOR_SUCCESS != selector_set_interest(s, d->fd, interest)) {
+            fprintf(stderr,"Could not set interest of %d for %d", interest, d->fd)
+            abort();
+        }
+    }
+    return interest;
+}
+
+extern uint8_t password_dissectors;
+
+// Gets the pointer to the copy_st depending on the selector
 void * copy_ptr(struct selector_key *key){
     int current_fd = key->fd;
     struct socks5 * data = key->data;
@@ -58,11 +63,28 @@ void * copy_ptr(struct selector_key *key){
     return NULL;
 }
 
-// lee bytes de un socket y los encola para ser escritos en otro socket
+// void * copy_ptr(struct selector_key *key, int *is_client){
+//     struct copy_st *d = &ATTACHMENT(key)->client.copy;
+//     //client
+//     if(key->fd == d->fd) {
+//         *is_client = true;
+//         return d;
+//     }
+//     //server
+//     *is_client = false;
+//     d = d->other_copy;
+//     return d;
+// }
+
+//--------------------metrics-------------------
+//----------------------------------------------
 extern size_t metrics_historic_byte_transfer;
 extern size_t metrics_average_bytes_per_read;
-extern size_t total_reads;
+extern size_t total_reads; 
 extern size_t metrics_concurrent_connections;
+//----------------------------------------------
+
+// Queue bytes from a socket to write to another socket
 unsigned copy_read(struct selector_key *key) {
     struct copy_st *d = copy_ptr(key);
     if(d == NULL){
@@ -79,7 +101,7 @@ unsigned copy_read(struct selector_key *key) {
 
     if (n <= 0)
     {
-        // Si error o EOF cierro el canal de lectura y el canal de escritura del origin
+        // If there's an error or EOF close the channels
         shutdown(d->fd, SHUT_RD);
         d->interest &= ~OP_READ;
         if (d->other_copy->fd != -1)
@@ -114,7 +136,7 @@ unsigned copy_read(struct selector_key *key) {
     return ret;
 }
 
-// escribe bytes encolados
+// Write queued bytes
 extern size_t metrics_average_bytes_per_write;
 extern size_t total_writes;
 unsigned copy_write(struct selector_key *key) {
@@ -141,7 +163,7 @@ unsigned copy_write(struct selector_key *key) {
     }
     else
     {
-        //// Add written bytes to metrics
+        // Add written bytes to metrics
         metrics_historic_byte_transfer += n;
         if (total_writes == 0) {
             metrics_average_bytes_per_write = n;

@@ -170,8 +170,7 @@ int parse_args(const int argc, char * const *argv, struct socks5args * args) {
                 break;
             case 'v':
                 version();
-                return -1;
-                break;            
+                return -1;         
             default:
                 fprintf(stderr, "unknown argument %d.\n", c);
                 return -1;

@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Juan Codagnone) */
 
 #include <stdio.h>
 #include <string.h>   //strlen

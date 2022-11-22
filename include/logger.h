@@ -1,4 +1,5 @@
-/* Modificaciones realizadas sobre codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Marcelo Gaberoglio) */
+/* MODIFICADO */
 
 #ifndef LOGGER_H
 #define LOGGER_H

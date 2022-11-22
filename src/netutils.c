@@ -1,4 +1,4 @@
-/* Codigo provisto por la cátedra */
+/* Codigo provisto por la cátedra (Juan Codagnone) */
 
 #include <stdbool.h>
 #include <errno.h>
