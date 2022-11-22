@@ -46,7 +46,7 @@ El server se puede correr usando
 ./bin/server -f <credentials_path> -u <user:pass>
 ```
 ```
-./bin/server -f credentials.txt -u admin:grupo4
+./bin/server -f credentials.txt -u admin:grupo5
 ```
 Consulte el manual para ver otros flags disponibles
 ```
