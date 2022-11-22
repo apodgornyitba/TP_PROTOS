@@ -19,12 +19,5 @@
  *          -1 if it does not match an IP address
 **/
 int address_processing(char * address, struct sockaddr_in * addr, struct sockaddr_in6 * addr6, uint16_t port);
-/**
- * Sets the origin information to the current addrinfo
- * @param data
- * @param current
- * @return
- */
-void set_addr(struct selector_key * key, struct addrinfo * current);
 
 #endif
