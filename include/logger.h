@@ -1,9 +1,10 @@
-/* Codigo provisto por la cátedra */
+/* Modificaciones realizadas sobre codigo provisto por la cátedra */
 
-#ifndef __logger_h_
-#define __logger_h_
+#ifndef LOGGER_H
+#define LOGGER_H
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 /* Macros y funciones simples para log de errores.
  * EL log se hace en forma simple
@@ -21,4 +22,6 @@ void setLogLevel(LOG_LEVEL newLevel);
 
 char * levelDescription(LOG_LEVEL level);
 
-void log_error(LOG_LEVEL level, const char *fmt, ...);
+void log_print(LOG_LEVEL level, const char *fmt, ...);
+
+#endif

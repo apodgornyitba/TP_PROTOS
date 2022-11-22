@@ -17,7 +17,7 @@ char * levelDescription(LOG_LEVEL level) {
     return description[level];
 }
 
-void log_error(LOG_LEVEL level, const char *fmt, ...) {
+void log_print(LOG_LEVEL level, const char *fmt, ...) {
     if(level >= current_level){
         fprintf (stderr, "%s: ", levelDescription(level)); 
         va_list arg; 
